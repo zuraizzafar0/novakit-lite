@@ -29,7 +29,8 @@ export default {
           100: "#F2F2F2",
           200: "#ECECEC",
           300: "#D9D9D9",
-          500: "#808080",
+          500: "#808080", // 3.95:1 on white: large text and decoration only
+          600: "#666666", // 5.74:1 on white: captions and secondary text
           700: "#4D4D4D",
           900: "#1A1A1A",
         },

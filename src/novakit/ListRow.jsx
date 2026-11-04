@@ -12,7 +12,7 @@ export default function ListRow({
   return (
     <div
       className={
-        "flex items-center gap-3 py-3 border-b border-[#DADADA] last:border-b-0 " +
+        "flex items-center gap-3 py-3 border-b border-neutral-300 last:border-b-0 " +
         className
       }
     >
@@ -24,7 +24,7 @@ export default function ListRow({
       <div className="min-w-0 flex-1">
         <div className="text-body text-neutral-900 truncate">{title}</div>
         {subtitle ? (
-          <div className="text-caption text-neutral-500 truncate">{subtitle}</div>
+          <div className="text-caption text-neutral-600 truncate">{subtitle}</div>
         ) : null}
       </div>
       {trailing ? <div className="shrink-0">{trailing}</div> : null}

@@ -83,6 +83,7 @@ Every token or component that was added or modified, with a one-line rationale.
 | AmountText `tone` | Component, extended | `muted` tone for locked amounts. The colour used to be hardcoded. | [AmountText.jsx](src/novakit/AmountText.jsx) |
 | `Notice` | Component, added | Persistent inline message (info / attention) for things the user must read before deciding, such as a reduced amount. Toast is wrong for this. | [Notice.jsx](src/novakit/Notice.jsx) |
 | `Timeline` | Component, added | A vertical "when → what → how much" sequence for terms, confirmation and repayment. | [Timeline.jsx](src/novakit/Timeline.jsx) |
+| TextField `label` / `helper` / `invalid` | Component, extended | Needed to type a partial repayment amount. It had no label or error state. Invalid isn't red, because a limit isn't a mistake. | [TextField.jsx](src/novakit/TextField.jsx) |
 | ListRow `wrap` | Component, extended | Cost explanations must never be cut off. Truncation stays the default for transaction lists. | [ListRow.jsx](src/novakit/ListRow.jsx) |
 | `AmountOption` | Component, added | Selectable amount with a locked state that explains why, so over-limit is designed out. | [AmountOption.jsx](src/novakit/AmountOption.jsx) |
 

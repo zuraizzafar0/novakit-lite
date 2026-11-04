@@ -8,6 +8,7 @@ import { DoneScreen, DeclinedScreen, PayslipSentScreen } from "./salary-advance/
 import {
   RepaymentScreen,
   NewDateScreen,
+  PayAmountScreen,
   RepaymentDoneScreen,
   reminderCopy,
 } from "./salary-advance/RepaymentScreens.jsx";
@@ -53,7 +54,7 @@ function initialState(scenario) {
 }
 
 // Deep links for reviewers, e.g. ?scenario=late&screen=repayment or ?scenario=haircut&screen=review
-const DEEP_LINK_SCREENS = ["home", "offer", "review", "declined", "repayment"];
+const DEEP_LINK_SCREENS = ["home", "offer", "review", "declined", "repayment", "pay_amount"];
 function fromUrl() {
   const q = new URLSearchParams(window.location.search);
   const scenario = SCENARIOS.find((x) => x.id === q.get("scenario")) || SCENARIOS[0];
@@ -65,6 +66,7 @@ function fromUrl() {
       state.screen = "review";
     } else if (screen === "declined" && scenario.decline) state.screen = "declined";
     else if (screen === "repayment" && scenario.repayment) state.screen = "repayment";
+    else if (screen === "pay_amount" && scenario.repayment?.state === "late") state.screen = "pay_amount";
     else if (screen === "offer" && !scenario.decline && !scenario.repayment) state.screen = "offer";
     state.push = state.push && state.screen === "home";
   }
@@ -96,6 +98,21 @@ export default function App() {
 
   const owed = s.advance ? repayFor(s.advance.amount) - s.repay.paid : 0;
   const home = () => go("home");
+
+  function pay(amount) {
+    const left = owed - amount;
+    set({
+      repay: { ...s.repay, paid: s.repay.paid + amount, wallet: s.repay.wallet - amount },
+      doneMessage:
+        left > 0
+          ? {
+              title: `You paid Rs ${fmt(amount)}`,
+              body: `Rs ${fmt(left)} is left, with nothing extra added. You can pay more any time, or choose a new date.`,
+            }
+          : { title: "Your advance is fully repaid", body: "Thank you. There's nothing more to pay." },
+      screen: "repayment_done",
+    });
+  }
 
   let view;
   switch (s.screen) {
@@ -159,20 +176,18 @@ export default function App() {
           repay={s.repay}
           onHome={home}
           onChooseDate={() => go("new_date")}
-          onPay={(amount) => {
-            const left = owed - amount;
-            set({
-              repay: { ...s.repay, paid: s.repay.paid + amount, wallet: s.repay.wallet - amount },
-              doneMessage:
-                left > 0
-                  ? {
-                      title: `You paid Rs ${fmt(amount)}`,
-                      body: `Rs ${fmt(left)} is left. We'll collect it when money next arrives in your wallet, and nothing extra will be added.`,
-                    }
-                  : { title: "Your advance is fully repaid", body: "Thank you. There's nothing more to pay." },
-              screen: "repayment_done",
-            });
-          }}
+          onChooseAmount={() => go("pay_amount")}
+          onPay={(amount) => pay(amount)}
+        />
+      );
+      break;
+    case "pay_amount":
+      view = (
+        <PayAmountScreen
+          owed={owed}
+          wallet={s.repay.wallet}
+          onBack={() => go("repayment")}
+          onConfirm={(amount) => pay(amount)}
         />
       );
       break;

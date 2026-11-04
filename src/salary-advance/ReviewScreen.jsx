@@ -117,7 +117,7 @@ export default function ReviewScreen({ requested, disbursed, onBack, onChangeAmo
         <div className="text-body font-semibold text-neutral-900">If you can't repay on {REPAYMENT_DATE.short}</div>
         <ul className="text-body text-neutral-700 space-y-1 list-disc pl-5">
           <li>No late fee and no interest. You'll never owe more than Rs {fmt(repay)}.</li>
-          <li>We'll collect it when money next arrives in your wallet.</li>
+          <li>We'll collect it when your next salary arrives, not from other money you receive.</li>
           <li>You can move the date once, for free, in the app.</li>
           <li>We'll never contact your family, friends or employer.</li>
         </ul>

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { AmountText, Button, Card, ListRow, Notice } from "../novakit";
+import { AmountOption, AmountText, Button, Card, ListRow, Notice, TextField } from "../novakit";
 import { Screen, OutcomeIcon } from "./layout.jsx";
 import { feeFor, fmt, NEW_DATE_OPTIONS, REPAYMENT_DATE, repayFor } from "./data.js";
 
@@ -47,7 +47,7 @@ function dueLine(repay) {
   }
 }
 
-export function RepaymentScreen({ amount, repay, onHome, onPay, onChooseDate }) {
+export function RepaymentScreen({ amount, repay, onHome, onPay, onChooseAmount, onChooseDate }) {
   const total = repayFor(amount);
   const owed = total - repay.paid;
   const late = repay.state === "late" && !repay.newDate;
@@ -59,14 +59,12 @@ export function RepaymentScreen({ amount, repay, onHome, onPay, onChooseDate }) 
       <>
         {payable > 0 ? (
           <>
-            <Button size="lg" onClick={() => onPay(payable)}>
-              Pay Rs {fmt(payable)} now
+            <Button size="lg" onClick={onChooseAmount}>
+              Pay some now
             </Button>
-            {payable < owed ? (
-              <p className="text-caption text-neutral-600 text-center">
-                That's what's in your wallet. The rest can come later.
-              </p>
-            ) : null}
+            <p className="text-caption text-neutral-600 text-center">
+              You choose how much. The rest can come later.
+            </p>
           </>
         ) : null}
         {!repay.usedDateChange ? (
@@ -129,7 +127,7 @@ export function RepaymentScreen({ amount, repay, onHome, onPay, onChooseDate }) 
           <div className="text-body font-semibold text-neutral-900">What happens now</div>
           <ul className="text-body text-neutral-700 space-y-1 list-disc pl-5">
             <li>No late fee and no interest. You'll never owe more than Rs {fmt(total)}.</li>
-            <li>We'll collect the rest automatically when money arrives in your wallet.</li>
+            <li>We'll collect the rest when your next salary arrives, not from other money you receive.</li>
             <li>You can't take a new advance until this one is repaid.</li>
             <li>We'll never contact your family, friends or employer.</li>
           </ul>
@@ -150,6 +148,96 @@ export function RepaymentScreen({ amount, repay, onHome, onPay, onChooseDate }) 
           payment doesn't go through.
         </p>
       ) : null}
+    </Screen>
+  );
+}
+
+/**
+ * Pay part of a late repayment: the user chooses how much.
+ * We never suggest emptying the wallet. Each suggestion shows what it leaves
+ * in the wallet, so the user can keep money back for essentials.
+ */
+function suggestions(wallet, owed) {
+  const max = Math.min(wallet, owed);
+  const steps = [0.25, 0.5].map((f) => Math.floor((max * f) / 500) * 500).filter((n) => n >= 500);
+  return [...new Set([...steps, max])].filter((n) => n > 0);
+}
+
+export function PayAmountScreen({ owed, wallet, onBack, onConfirm }) {
+  const options = suggestions(wallet, owed);
+  const [preset, setPreset] = useState(null);
+  const [custom, setCustom] = useState("");
+  const max = Math.min(wallet, owed);
+
+  const typed = custom === "" ? null : Number(custom.replace(/[^0-9]/g, ""));
+  const amount = typed ?? preset;
+  let problem = null;
+  if (typed != null) {
+    if (typed <= 0) problem = "Enter an amount above Rs 0.";
+    else if (typed > wallet) problem = `That's more than the Rs ${fmt(wallet)} in your wallet.`;
+    else if (typed > owed) problem = `You only owe Rs ${fmt(owed)}.`;
+  }
+  const valid = amount != null && amount > 0 && !problem;
+
+  return (
+    <Screen
+      title="Pay some now"
+      onBack={onBack}
+      footer={
+        <>
+          {valid ? (
+            <p className="text-caption text-neutral-600 text-center">
+              Leaves Rs {fmt(wallet - amount)} in your wallet
+              {owed - amount > 0 ? ` · Rs ${fmt(owed - amount)} left to repay` : " · fully repaid"}
+            </p>
+          ) : null}
+          <Button size="lg" disabled={!valid} onClick={() => onConfirm(amount)}>
+            {valid ? `Pay Rs ${fmt(amount)}` : "Choose an amount"}
+          </Button>
+          <Button variant="secondary" onClick={onBack}>
+            Cancel
+          </Button>
+        </>
+      }
+    >
+      <div>
+        <h2 className="text-title text-neutral-900">How much do you want to pay now?</h2>
+        <p className="text-body text-neutral-700 mt-1">
+          Any amount helps, and nothing extra is added to what's left. Keep enough for what you need this
+          week. Your wallet has Rs {fmt(wallet)}.
+        </p>
+      </div>
+
+      <div role="radiogroup" aria-label="Amount to pay" className="space-y-2">
+        {options.map((n) => (
+          <AmountOption
+            key={n}
+            amount={n}
+            detail={
+              n === wallet
+                ? "Everything in your wallet"
+                : `Leaves Rs ${fmt(wallet - n)} in your wallet`
+            }
+            selected={typed == null && preset === n}
+            onSelect={() => {
+              setPreset(n);
+              setCustom("");
+            }}
+          />
+        ))}
+      </div>
+
+      <TextField
+        label="Or enter an amount"
+        prefix="Rs"
+        inputMode="numeric"
+        placeholder="0"
+        value={custom}
+        onChange={(e) => setCustom(e.target.value.replace(/[^0-9]/g, ""))}
+        onFocus={() => setPreset(null)}
+        invalid={Boolean(problem)}
+        helper={problem || `Up to Rs ${fmt(max)}`}
+      />
     </Screen>
   );
 }

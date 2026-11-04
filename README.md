@@ -48,7 +48,7 @@ Use the **Prototype scenario** panel next to the phone to simulate what NovaPay'
 | Declined: credit history | Reason given, plus a date to check again. |
 | Declined: other | The hard case: no specific reason can be shared, but there's still a date, a reminder and a way to ask for human review. |
 | Reminder: due in 3 days / due today | The reminder notification copy, and a calm repayment card with the amount and date first and no alarm styling. |
-| Late: payment didn't go through | Amber, not red. One sentence on what happened, no late fee, and two ways forward: pay what's in your wallet now, or move the date once for free. |
+| Late: payment didn't go through | Amber, not red. One sentence on what happened, no late fee, and two ways forward: pay an amount you choose (each suggestion shows what it leaves in your wallet), or move the date once for free. |
 
 **Deep links:** add `?scenario=<id>&screen=<screen>` to the URL, for example `?scenario=haircut&screen=review`, `?scenario=other&screen=declined` or `?scenario=late&screen=repayment`.
 

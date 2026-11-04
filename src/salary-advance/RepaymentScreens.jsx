@@ -1,0 +1,221 @@
+import { useState } from "react";
+import { AmountText, Button, Card, ListRow, Notice } from "../novakit";
+import { Screen, OutcomeIcon } from "./layout.jsx";
+import { feeFor, fmt, NEW_DATE_OPTIONS, REPAYMENT_DATE, repayFor } from "./data.js";
+
+/**
+ * Repayment: the third hard moment.
+ *
+ * Built from the benchmarking:
+ * - Afterpay: one big number for what you owe, plus the date. Plain, with no
+ *   alarm styling before it's actually late.
+ * - Warby Parker: a failed collection gets one sentence on what happened and
+ *   a clear fix.
+ * - Tabby: a struggling borrower sees a way forward (pay part now, move the
+ *   date), not only "Pay now".
+ * - KOHO (what not to do): no red, no loss framing, no threats.
+ *
+ * Product decisions beyond PRODUCT_REFERENCE.md (stated as assumptions):
+ * partial payments are accepted, and the date can be moved once for free.
+ */
+
+/** Reminder copy (SMS/push). Plain, with the amount and date, and never threatening. */
+export function reminderCopy(repay, owed) {
+  switch (repay.state) {
+    case "due_soon":
+      return `Your salary advance repayment of Rs ${fmt(owed)} is due on ${REPAYMENT_DATE.day}. We'll take it from your wallet after your salary arrives. Nothing to do now.`;
+    case "due_today":
+      return `Today we'll collect Rs ${fmt(owed)} for your salary advance, once your salary arrives in your wallet.`;
+    case "late":
+      return `We couldn't collect Rs ${fmt(owed)} on ${REPAYMENT_DATE.day}. No late fee has been added. Open NovaPay to see your options.`;
+    default:
+      return null;
+  }
+}
+
+function dueLine(repay) {
+  if (repay.newDate) return `Due on ${repay.newDate}`;
+  switch (repay.state) {
+    case "due_soon":
+      return `Due on ${REPAYMENT_DATE.long} · in 3 days`;
+    case "due_today":
+      return "Due today, after your salary arrives";
+    case "late":
+      return `Was due on ${REPAYMENT_DATE.day} · ${repay.daysLate} days ago`;
+    default:
+      return `Due on ${REPAYMENT_DATE.long}`;
+  }
+}
+
+export function RepaymentScreen({ amount, repay, onHome, onPay, onChooseDate }) {
+  const total = repayFor(amount);
+  const owed = total - repay.paid;
+  const late = repay.state === "late" && !repay.newDate;
+  const payable = Math.min(repay.wallet, owed);
+
+  let footer;
+  if (late) {
+    footer = (
+      <>
+        {payable > 0 ? (
+          <>
+            <Button size="lg" onClick={() => onPay(payable)}>
+              Pay Rs {fmt(payable)} now
+            </Button>
+            {payable < owed ? (
+              <p className="text-caption text-neutral-600 text-center">
+                That's what's in your wallet. The rest can come later.
+              </p>
+            ) : null}
+          </>
+        ) : null}
+        {!repay.usedDateChange ? (
+          <Button variant="secondary" onClick={onChooseDate}>
+            Choose a new date
+          </Button>
+        ) : (
+          <Button variant="secondary" onClick={onHome}>
+            Back to home
+          </Button>
+        )}
+      </>
+    );
+  } else {
+    footer = (
+      <>
+        {repay.wallet >= owed ? (
+          <Button variant="secondary" onClick={() => onPay(owed)}>
+            Repay early: Rs {fmt(owed)}
+          </Button>
+        ) : null}
+        <Button size="lg" variant={repay.wallet >= owed ? "primary" : "secondary"} onClick={onHome}>
+          Back to home
+        </Button>
+      </>
+    );
+  }
+
+  return (
+    <Screen title="Your salary advance" onBack={onHome} footer={footer}>
+      {late ? (
+        <Notice tone="attention" title={`We couldn't collect your repayment on ${REPAYMENT_DATE.day}`}>
+          {repay.paid > 0
+            ? `Thanks for paying Rs ${fmt(repay.paid)}. Rs ${fmt(owed)} is left, and nothing extra has been added.`
+            : `Your wallet had less than the Rs ${fmt(total)} due. Nothing extra has been added.`}
+        </Notice>
+      ) : null}
+
+      {/* One big number + the date (Afterpay). */}
+      <div>
+        <div className="text-caption text-neutral-600">{repay.paid > 0 ? "Left to pay" : "You owe"}</div>
+        <AmountText amount={owed} size="display" />
+        <div className="text-body text-neutral-900">{dueLine(repay)}</div>
+      </div>
+
+      <Card className="py-1">
+        <ListRow title="Advance" trailing={<AmountText amount={amount} size="body" />} />
+        <ListRow title="Fee (one-time)" trailing={<AmountText amount={feeFor(amount)} size="body" />} />
+        {repay.paid > 0 ? (
+          <ListRow title="Paid so far" trailing={<span className="text-body text-neutral-900">− Rs {fmt(repay.paid)}</span>} />
+        ) : null}
+        <ListRow
+          title={<span className="font-semibold">{repay.paid > 0 ? "Left to pay" : "Total"}</span>}
+          trailing={<AmountText amount={owed} size="body" className="font-semibold" />}
+        />
+      </Card>
+
+      {late ? (
+        <Card className="space-y-2">
+          <div className="text-body font-semibold text-neutral-900">What happens now</div>
+          <ul className="text-body text-neutral-700 space-y-1 list-disc pl-5">
+            <li>No late fee and no interest. You'll never owe more than Rs {fmt(total)}.</li>
+            <li>We'll collect the rest automatically when money arrives in your wallet.</li>
+            <li>You can't take a new advance until this one is repaid.</li>
+            <li>We'll never contact your family, friends or employer.</li>
+          </ul>
+        </Card>
+      ) : (
+        <Card className="space-y-1">
+          <div className="text-body font-semibold text-neutral-900">How it's paid</div>
+          <p className="text-body text-neutral-700">
+            We'll take it from your wallet automatically after your salary arrives. You don't need to do
+            anything. Your wallet has Rs {fmt(repay.wallet)} today.
+          </p>
+        </Card>
+      )}
+
+      {!late && !repay.usedDateChange ? (
+        <p className="text-caption text-neutral-600">
+          Worried about paying on time? You can move the date once, for free, from this screen if a
+          payment doesn't go through.
+        </p>
+      ) : null}
+    </Screen>
+  );
+}
+
+/** Move the repayment date once, for free (benchmark: Tabby "Extend"). */
+export function NewDateScreen({ owed, onBack, onConfirm }) {
+  const [date, setDate] = useState(null);
+  return (
+    <Screen
+      title="Choose a new date"
+      onBack={onBack}
+      footer={
+        <>
+          <Button size="lg" disabled={!date} onClick={() => onConfirm(date)}>
+            {date ? `Move my date to ${date}` : "Choose a date"}
+          </Button>
+          <Button variant="secondary" onClick={onBack}>
+            Cancel
+          </Button>
+        </>
+      }
+    >
+      <div>
+        <h2 className="text-title text-neutral-900">When can you repay Rs {fmt(owed)}?</h2>
+        <p className="text-body text-neutral-700 mt-1">
+          Moving the date is free, and the amount stays the same. You can do this once.
+        </p>
+      </div>
+      <fieldset className="space-y-2">
+        <legend className="sr-only">New repayment date</legend>
+        {NEW_DATE_OPTIONS.map((d) => (
+          <label
+            key={d}
+            className={`flex items-center gap-3 rounded-md border p-4 cursor-pointer ${
+              date === d ? "border-brand bg-brand-50 ring-1 ring-brand" : "border-neutral-300 bg-white"
+            }`}
+          >
+            <input type="radio" name="newdate" checked={date === d} onChange={() => setDate(d)} className="accent-brand h-4 w-4" />
+            <span className="text-body text-neutral-900">{d}</span>
+          </label>
+        ))}
+      </fieldset>
+      <p className="text-caption text-neutral-600">
+        We'll take it from your wallet on that date and remind you 3 days before. If money arrives sooner,
+        you can repay earlier.
+      </p>
+    </Screen>
+  );
+}
+
+/** Confirmation after a payment or a date change. Calm, factual, no celebration of debt. */
+export function RepaymentDoneScreen({ title, body, onHome }) {
+  return (
+    <Screen
+      title="Salary advance"
+      footer={
+        <Button size="lg" onClick={onHome}>
+          Back to home
+        </Button>
+      }
+    >
+      <div className="flex flex-col items-center text-center gap-3 pt-6">
+        <OutcomeIcon tone="brand">✓</OutcomeIcon>
+        <h2 className="text-title text-neutral-900">{title}</h2>
+        <p className="text-body text-neutral-700">{body}</p>
+      </div>
+    </Screen>
+  );
+}

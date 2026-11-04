@@ -34,6 +34,7 @@ The brief asks for depth over breadth. It covers three moments:
 | 1. Terms and total-cost disclosure | Pick an amount → **Review your advance**. Every amount option also shows its fee and total. | [OfferScreen.jsx](src/salary-advance/OfferScreen.jsx), [ReviewScreen.jsx](src/salary-advance/ReviewScreen.jsx) |
 | 2. The accept decision | Same screen. The total and date sit directly above **Accept**, with an equally readable **Not now**. | [ReviewScreen.jsx](src/salary-advance/ReviewScreen.jsx) |
 | 3. A not-good path: **declined** | Choose a "Declined" scenario, then tap **Check what I can get**. | [OutcomeScreens.jsx](src/salary-advance/OutcomeScreens.jsx) |
+| 3b. A not-good path: **repayment due / late** | Choose a "Repaying" scenario. The reminder appears as a notification, and the late state offers to pay part now or move the date. | [RepaymentScreens.jsx](src/salary-advance/RepaymentScreens.jsx) |
 
 ### Scenarios
 
@@ -45,7 +46,11 @@ Use the **Prototype scenario** panel next to the phone to simulate what NovaPay'
 | Approved, amount reduced | Choose **Rs 15,000**. Final checks reduce it to Rs 10,000, and the review screen discloses this before Accept, with the fee recalculated. |
 | Declined: income not verified | Real reason plus a next step (upload a payslip). Home then shows "we need to confirm your salary". |
 | Declined: credit history | Reason given, plus a date to check again. |
-| Declined: other | The hard case: no specific reason can be shared, but there's still a date and a route to support. |
+| Declined: other | The hard case: no specific reason can be shared, but there's still a date, a reminder and a way to ask for human review. |
+| Reminder: due in 3 days / due today | The reminder notification copy, and a calm repayment card with the amount and date first and no alarm styling. |
+| Late: payment didn't go through | Amber, not red. One sentence on what happened, no late fee, and two ways forward: pay what's in your wallet now, or move the date once for free. |
+
+**Deep links:** add `?scenario=<id>&screen=<screen>` to the URL, for example `?scenario=haircut&screen=review`, `?scenario=other&screen=declined` or `?scenario=late&screen=repayment`.
 
 ---
 
@@ -77,6 +82,8 @@ Every token or component that was added or modified, with a one-line rationale.
 | Card, ListRow borders | Component, fixed | Hardcoded hex values replaced with neutral tokens. ListRow subtitles use `neutral-600`. | [Card.jsx](src/novakit/Card.jsx), [ListRow.jsx](src/novakit/ListRow.jsx) |
 | AmountText `tone` | Component, extended | `muted` tone for locked amounts. The colour used to be hardcoded. | [AmountText.jsx](src/novakit/AmountText.jsx) |
 | `Notice` | Component, added | Persistent inline message (info / attention) for things the user must read before deciding, such as a reduced amount. Toast is wrong for this. | [Notice.jsx](src/novakit/Notice.jsx) |
+| `Timeline` | Component, added | A vertical "when → what → how much" sequence for terms, confirmation and repayment. | [Timeline.jsx](src/novakit/Timeline.jsx) |
+| ListRow `wrap` | Component, extended | Cost explanations must never be cut off. Truncation stays the default for transaction lists. | [ListRow.jsx](src/novakit/ListRow.jsx) |
 | `AmountOption` | Component, added | Selectable amount with a locked state that explains why, so over-limit is designed out. | [AmountOption.jsx](src/novakit/AmountOption.jsx) |
 
 ### Issues found in the starter system

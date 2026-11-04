@@ -11,9 +11,10 @@ export default function ScenarioSwitcher({ scenarios, value, onChange, onReset }
           Simulates what NovaPay's checks return. Changing it restarts the flow from home.
         </p>
       </div>
-      <fieldset className="space-y-2">
-        <legend className="sr-only">Scenario</legend>
-        {scenarios.map((s) => (
+      {[...new Set(scenarios.map((s) => s.group))].map((group) => (
+      <fieldset key={group} className="space-y-2">
+        <legend className="text-caption font-semibold text-neutral-600 uppercase tracking-wide mb-1">{group}</legend>
+        {scenarios.filter((s) => s.group === group).map((s) => (
           <label
             key={s.id}
             className={`flex gap-2 rounded-md border p-2 cursor-pointer ${
@@ -35,6 +36,7 @@ export default function ScenarioSwitcher({ scenarios, value, onChange, onReset }
           </label>
         ))}
       </fieldset>
+      ))}
       <button
         type="button"
         onClick={onReset}

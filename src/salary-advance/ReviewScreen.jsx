@@ -1,18 +1,21 @@
 import { useState } from "react";
-import { AmountText, Button, Card, ListRow, Notice } from "../novakit";
+import { AmountText, Button, Card, ListRow, Notice, Timeline } from "../novakit";
 import { Screen } from "./layout.jsx";
-import { feeFor, repayFor, REPAYMENT_DATE } from "./data.js";
-
-const fmt = (n) => new Intl.NumberFormat("en-PK").format(n);
+import { feeFor, fmt, repayFor, REPAYMENT_DATE } from "./data.js";
 
 /**
  * Moments 1 + 2: total-cost disclosure and the accept decision, on ONE screen.
- * The product rule is that the total cost and date must be clear "at the moment
- * of decision", so the numbers sit directly above the Accept button rather than
- * on a previous screen or in a sheet.
  *
- * If final checks reduced the amount (haircut), that is disclosed here, BEFORE
- * Accept, with the fee recalculated on the amount actually sent.
+ * Built from the benchmarking:
+ * - Affirm: the headline is one line, what you repay and when.
+ * - Airwallex: a timeline of "You get today → You repay on payday".
+ * - Zip: every cost has a plain-language line, and the late-payment
+ *   consequence is stated BEFORE accepting, not after.
+ * - Zopa: "Not now" sits right under Accept at almost equal weight.
+ * - Afterpay (what not to do): no fee hidden behind an info icon, no
+ *   consent checkbox above a wall of legal text.
+ *
+ * A haircut is disclosed here, before Accept, with the fee recalculated.
  */
 export default function ReviewScreen({ requested, disbursed, onBack, onChangeAmount, onDecline, onAccept }) {
   const [sending, setSending] = useState(false);
@@ -32,8 +35,7 @@ export default function ReviewScreen({ requested, disbursed, onBack, onChangeAmo
       footer={
         <>
           <p className="text-caption text-neutral-600 text-center">
-            You'll repay <span className="font-semibold text-neutral-900">Rs {fmt(repay)}</span> on{" "}
-            {REPAYMENT_DATE.short}.
+            Nothing is sent or charged until you tap Accept.
           </p>
           <Button size="lg" loading={sending} onClick={accept}>
             {sending ? "Sending…" : `Accept and get Rs ${fmt(disbursed)}`}
@@ -47,8 +49,8 @@ export default function ReviewScreen({ requested, disbursed, onBack, onChangeAmo
       {reduced ? (
         <Notice tone="attention" title={`We can send Rs ${fmt(disbursed)}, not Rs ${fmt(requested)}`}>
           <p>
-            After our final checks, Rs {fmt(disbursed)} is the most we can offer right now, based on
-            your recent account activity. The fee below is worked out on Rs {fmt(disbursed)}.
+            After our final checks, Rs {fmt(disbursed)} is the most we can offer right now, based on your
+            recent account activity. Everything below is worked out on Rs {fmt(disbursed)}.
           </p>
           <button
             type="button"
@@ -61,36 +63,65 @@ export default function ReviewScreen({ requested, disbursed, onBack, onChangeAmo
         </Notice>
       ) : null}
 
+      {/* Headline: the commitment in one sentence (Affirm). */}
       <div>
-        <div className="text-caption text-neutral-600">You get today</div>
-        <AmountText amount={disbursed} size="display" />
+        <div className="text-caption text-neutral-600">You repay</div>
+        <AmountText amount={repay} size="display" />
+        <div className="text-body text-neutral-900">on {REPAYMENT_DATE.long}</div>
       </div>
 
-      <Card className="py-1">
-        <ListRow title="You get" trailing={<AmountText amount={disbursed} size="body" />} />
-        <ListRow
-          title="Fee"
-          subtitle="One-time, 3% of the amount sent"
-          trailing={<AmountText amount={fee} size="body" />}
-        />
-        <ListRow
-          title={<span className="font-semibold">You repay</span>}
-          subtitle={`On ${REPAYMENT_DATE.long}`}
-          trailing={<AmountText amount={repay} size="title" />}
+      {/* What happens, in order (Airwallex). */}
+      <Card>
+        <Timeline
+          items={[
+            {
+              when: "Today",
+              title: "You get",
+              amount: disbursed,
+              detail: "Into your NovaPay wallet, straight away",
+            },
+            {
+              when: `${REPAYMENT_DATE.day} · your payday`,
+              title: "You repay",
+              amount: repay,
+              detail: "Taken from your wallet after your salary arrives",
+            },
+          ]}
         />
       </Card>
 
-      <ul className="text-body text-neutral-700 space-y-2">
-        <li>
-          <span className="font-semibold text-neutral-900">This is the full cost.</span> No interest and no
-          other charges.
-        </li>
-        <li>
-          On {REPAYMENT_DATE.short}, we take Rs {fmt(repay)} from your NovaPay wallet, after your salary
-          arrives.
-        </li>
-        <li>We'll remind you 3 days before.</li>
-      </ul>
+      {/* Every number with a plain-language line (Zip). */}
+      <Card className="py-1">
+        <ListRow
+          wrap
+          title="Amount"
+          subtitle="What you receive"
+          trailing={<AmountText amount={disbursed} size="body" />}
+        />
+        <ListRow
+          wrap
+          title="Fee"
+          subtitle="What this advance costs you. Charged once: 3% of the amount."
+          trailing={<AmountText amount={fee} size="body" />}
+        />
+        <ListRow
+          wrap
+          title={<span className="font-semibold">Total to repay</span>}
+          subtitle="The only amount you'll pay back. No interest."
+          trailing={<AmountText amount={repay} size="body" className="font-semibold" />}
+        />
+      </Card>
+
+      {/* The late-payment consequence, stated before accepting (Zip). */}
+      <Card className="space-y-2">
+        <div className="text-body font-semibold text-neutral-900">If you can't repay on {REPAYMENT_DATE.short}</div>
+        <ul className="text-body text-neutral-700 space-y-1 list-disc pl-5">
+          <li>No late fee and no interest. You'll never owe more than Rs {fmt(repay)}.</li>
+          <li>We'll collect it when money next arrives in your wallet.</li>
+          <li>You can move the date once, for free, in the app.</li>
+          <li>We'll never contact your family, friends or employer.</li>
+        </ul>
+      </Card>
     </Screen>
   );
 }

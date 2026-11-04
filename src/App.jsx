@@ -1,49 +1,104 @@
 import { useEffect, useState } from "react";
 import ScenarioSwitcher from "./prototype/ScenarioSwitcher.jsx";
+import PushPreview from "./prototype/PushPreview.jsx";
 import HomeScreen from "./salary-advance/HomeScreen.jsx";
 import OfferScreen from "./salary-advance/OfferScreen.jsx";
 import ReviewScreen from "./salary-advance/ReviewScreen.jsx";
 import { DoneScreen, DeclinedScreen, PayslipSentScreen } from "./salary-advance/OutcomeScreens.jsx";
+import {
+  RepaymentScreen,
+  NewDateScreen,
+  RepaymentDoneScreen,
+  reminderCopy,
+} from "./salary-advance/RepaymentScreens.jsx";
 import { Waiting } from "./salary-advance/layout.jsx";
-import { SCENARIOS, STARTING_BALANCE, disbursedFor } from "./salary-advance/data.js";
+import {
+  ADVANCE_AMOUNT_FOR_REPAY_SCENARIOS,
+  SCENARIOS,
+  STARTING_BALANCE,
+  disbursedFor,
+  fmt,
+  repayFor,
+} from "./salary-advance/data.js";
 
 /**
  * NovaPay prototype: first-time salary advance.
  *
- * home → checking → offer → final checks → review (terms + accept) → done
- *                 ↘ declined → (payslip uploaded)
+ * Applying:  home → checking → offer → final checks → review (terms + accept) → done
+ *                           ↘ declined → (payslip uploaded)
+ * Repaying:  reminder → repayment details → (late) pay part now / choose a new date
  */
+function initialState(scenario) {
+  if (scenario.repayment) {
+    const { state, wallet, daysLate = 0 } = scenario.repayment;
+    return {
+      screen: "home",
+      requested: null,
+      status: null,
+      advance: { amount: ADVANCE_AMOUNT_FOR_REPAY_SCENARIOS },
+      repay: { state, wallet, daysLate, paid: 0, newDate: null, usedDateChange: false },
+      push: true,
+      doneMessage: null,
+    };
+  }
+  return {
+    screen: "home",
+    requested: null,
+    status: null,
+    advance: null,
+    repay: { state: "none", wallet: STARTING_BALANCE, daysLate: 0, paid: 0, newDate: null, usedDateChange: false },
+    push: false,
+    doneMessage: null,
+  };
+}
+
+// Deep links for reviewers, e.g. ?scenario=late&screen=repayment or ?scenario=haircut&screen=review
+const DEEP_LINK_SCREENS = ["home", "offer", "review", "declined", "repayment"];
+function fromUrl() {
+  const q = new URLSearchParams(window.location.search);
+  const scenario = SCENARIOS.find((x) => x.id === q.get("scenario")) || SCENARIOS[0];
+  const state = initialState(scenario);
+  const screen = q.get("screen");
+  if (DEEP_LINK_SCREENS.includes(screen)) {
+    if (screen === "review" && !scenario.decline && !scenario.repayment) {
+      state.requested = scenario.haircutCap ? 15000 : scenario.limit;
+      state.screen = "review";
+    } else if (screen === "declined" && scenario.decline) state.screen = "declined";
+    else if (screen === "repayment" && scenario.repayment) state.screen = "repayment";
+    else if (screen === "offer" && !scenario.decline && !scenario.repayment) state.screen = "offer";
+    state.push = state.push && state.screen === "home";
+  }
+  return { scenarioId: scenario.id, state };
+}
+
 export default function App() {
-  const [scenarioId, setScenarioId] = useState("approved");
-  const [screen, setScreen] = useState("home");
-  const [requested, setRequested] = useState(null);
-  const [advance, setAdvance] = useState(null); // { amount } once accepted
-  const [status, setStatus] = useState(null); // null | "declined" | "needs_payslip" | "payslip_review"
-
+  const [initial] = useState(fromUrl);
+  const [scenarioId, setScenarioId] = useState(initial.scenarioId);
   const scenario = SCENARIOS.find((s) => s.id === scenarioId);
+  const [s, setS] = useState(initial.state);
+  const set = (patch) => setS((prev) => ({ ...prev, ...patch }));
+  const go = (screen) => set({ screen, push: false });
 
-  function reset(nextScenarioId = scenarioId) {
-    setScenarioId(nextScenarioId);
-    setScreen("home");
-    setRequested(null);
-    setAdvance(null);
-    setStatus(null);
+  function reset(nextId = scenarioId) {
+    setScenarioId(nextId);
+    setS(initialState(SCENARIOS.find((x) => x.id === nextId)));
   }
 
   // Simulated network waits.
   useEffect(() => {
-    if (screen !== "checking" && screen !== "final_checks") return;
+    if (s.screen !== "checking" && s.screen !== "final_checks") return;
     const t = setTimeout(() => {
-      if (screen === "checking") setScreen(scenario.decline ? "declined" : "offer");
-      else setScreen("review");
+      if (s.screen === "checking") set({ screen: scenario.decline ? "declined" : "offer" });
+      else set({ screen: "review" });
     }, 1200);
     return () => clearTimeout(t);
-  }, [screen, scenario]);
+  }, [s.screen, scenario]);
 
-  const home = () => setScreen("home");
+  const owed = s.advance ? repayFor(s.advance.amount) - s.repay.paid : 0;
+  const home = () => go("home");
 
   let view;
-  switch (screen) {
+  switch (s.screen) {
     case "checking":
       view = <Waiting title="Salary advance" message="Checking what you can get…" />;
       break;
@@ -51,12 +106,10 @@ export default function App() {
       view = (
         <OfferScreen
           limit={scenario.limit}
-          initialAmount={requested}
+          mayReduce={Boolean(scenario.haircutCap)}
+          initialAmount={s.requested}
           onBack={home}
-          onContinue={(amount) => {
-            setRequested(amount);
-            setScreen("final_checks");
-          }}
+          onContinue={(amount) => set({ requested: amount, screen: "final_checks" })}
         />
       );
       break;
@@ -66,54 +119,94 @@ export default function App() {
     case "review":
       view = (
         <ReviewScreen
-          requested={requested}
-          disbursed={disbursedFor(scenario, requested)}
-          onBack={() => setScreen("offer")}
-          onChangeAmount={() => {
-            setRequested(null);
-            setScreen("offer");
-          }}
+          requested={s.requested}
+          disbursed={disbursedFor(scenario, s.requested)}
+          onBack={() => go("offer")}
+          onChangeAmount={() => set({ requested: null, screen: "offer" })}
           onDecline={home}
           onAccept={() => {
-            setAdvance({ amount: disbursedFor(scenario, requested) });
-            setScreen("done");
+            const amount = disbursedFor(scenario, s.requested);
+            set({
+              advance: { amount },
+              repay: { ...s.repay, state: "active", wallet: s.repay.wallet + amount },
+              screen: "done",
+            });
           }}
         />
       );
       break;
     case "done":
-      view = <DoneScreen amount={advance.amount} onHome={home} />;
+      view = <DoneScreen amount={s.advance.amount} onHome={home} />;
       break;
     case "declined":
       view = (
         <DeclinedScreen
           reason={scenario.decline}
-          onHome={() => {
-            setStatus(scenario.decline === "income_unverified" ? "needs_payslip" : "declined");
-            home();
-          }}
-          onUploadPayslip={() => setScreen("payslip_sent")}
+          onHome={() =>
+            set({ status: scenario.decline === "income_unverified" ? "needs_payslip" : "declined", screen: "home" })
+          }
+          onUploadPayslip={() => go("payslip_sent")}
         />
       );
       break;
     case "payslip_sent":
+      view = <PayslipSentScreen onHome={() => set({ status: "payslip_review", screen: "home" })} />;
+      break;
+    case "repayment":
       view = (
-        <PayslipSentScreen
-          onHome={() => {
-            setStatus("payslip_review");
-            home();
+        <RepaymentScreen
+          amount={s.advance.amount}
+          repay={s.repay}
+          onHome={home}
+          onChooseDate={() => go("new_date")}
+          onPay={(amount) => {
+            const left = owed - amount;
+            set({
+              repay: { ...s.repay, paid: s.repay.paid + amount, wallet: s.repay.wallet - amount },
+              doneMessage:
+                left > 0
+                  ? {
+                      title: `You paid Rs ${fmt(amount)}`,
+                      body: `Rs ${fmt(left)} is left. We'll collect it when money next arrives in your wallet, and nothing extra will be added.`,
+                    }
+                  : { title: "Your advance is fully repaid", body: "Thank you. There's nothing more to pay." },
+              screen: "repayment_done",
+            });
           }}
         />
       );
       break;
+    case "new_date":
+      view = (
+        <NewDateScreen
+          owed={owed}
+          onBack={() => go("repayment")}
+          onConfirm={(date) =>
+            set({
+              repay: { ...s.repay, newDate: date, usedDateChange: true },
+              doneMessage: {
+                title: `Your new date is ${date}`,
+                body: `We'll take Rs ${fmt(owed)} from your wallet on ${date} and remind you 3 days before. There's no extra cost.`,
+              },
+              screen: "repayment_done",
+            })
+          }
+        />
+      );
+      break;
+    case "repayment_done":
+      view = <RepaymentDoneScreen {...s.doneMessage} onHome={home} />;
+      break;
     default:
       view = (
         <HomeScreen
-          balance={STARTING_BALANCE + (advance ? advance.amount : 0)}
-          advance={advance}
-          status={status}
-          onSeeOffer={() => setScreen("checking")}
-          onUploadPayslip={() => setScreen("payslip_sent")}
+          balance={s.repay.wallet}
+          advance={s.advance}
+          repay={s.repay}
+          status={s.status}
+          onSeeOffer={() => go("checking")}
+          onUploadPayslip={() => go("payslip_sent")}
+          onOpenAdvance={() => go("repayment")}
         />
       );
   }
@@ -125,6 +218,13 @@ export default function App() {
       {/* Mobile frame */}
       <div className="relative w-full max-w-[390px] h-[780px] bg-white rounded-[28px] shadow-xl overflow-hidden border border-neutral-300 shrink-0">
         {view}
+        {s.screen === "home" && s.push && s.advance ? (
+          <PushPreview
+            message={reminderCopy(s.repay, owed)}
+            onOpen={() => go("repayment")}
+            onDismiss={() => set({ push: false })}
+          />
+        ) : null}
       </div>
     </div>
   );

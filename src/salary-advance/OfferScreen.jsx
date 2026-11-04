@@ -1,18 +1,19 @@
 import { useState } from "react";
 import { AmountOption, Button, Card } from "../novakit";
 import { Screen } from "./layout.jsx";
-import { TIERS, feeFor, repayFor, REPAYMENT_DATE } from "./data.js";
-
-const fmt = (n) => new Intl.NumberFormat("en-PK").format(n);
+import { TIERS, feeFor, fmt, repayFor, REPAYMENT_DATE } from "./data.js";
 
 /**
- * Moment 0: choose an amount.
+ * Choose an amount.
  * - Nothing is pre-selected, so we don't nudge people toward the largest amount.
- * - Every option shows its fee and total repayment, so the cost is visible
- *   before the terms screen.
+ * - Every option shows its fee in rupees and its total (Dave, what not to do:
+ *   "a small fee" with no number).
  * - Tiers above the limit are locked, so over-limit requests can't happen.
+ * - We say up front that a final check can lower the amount (KOHO, what not to
+ *   do: promising an amount a later check takes away).
+ * - No countdowns, referral boosts or "limited time" framing (Cleo, what not to do).
  */
-export default function OfferScreen({ limit, initialAmount = null, onBack, onContinue }) {
+export default function OfferScreen({ limit, mayReduce = false, initialAmount = null, onBack, onContinue }) {
   const [selected, setSelected] = useState(initialAmount);
 
   return (
@@ -33,9 +34,15 @@ export default function OfferScreen({ limit, initialAmount = null, onBack, onCon
       <div>
         <h2 className="text-title text-neutral-900">How much do you need?</h2>
         <p className="text-body text-neutral-700 mt-1">
-          You can get up to Rs {fmt(limit)}. You pay it back in one go on your next payday,{" "}
+          You can ask for up to Rs {fmt(limit)}. You pay it back in one go on your next payday,{" "}
           <span className="font-semibold text-neutral-900">{REPAYMENT_DATE.short}</span>.
         </p>
+        {mayReduce ? (
+          <p className="text-caption text-neutral-600 mt-2">
+            We run one last check before you accept. If it changes the amount, we'll tell you before
+            anything is sent.
+          </p>
+        ) : null}
       </div>
 
       <div role="radiogroup" aria-label="Advance amount" className="space-y-2">
@@ -55,9 +62,10 @@ export default function OfferScreen({ limit, initialAmount = null, onBack, onCon
       <Card className="space-y-2">
         <div className="text-body font-semibold text-neutral-900">How it works</div>
         <ul className="text-body text-neutral-700 space-y-1 list-disc pl-5">
-          <li>One fixed fee of 3%. No interest.</li>
+          <li>One fixed fee of 3%. No interest, no late fees.</li>
           <li>Repaid automatically from your NovaPay wallet on {REPAYMENT_DATE.short}.</li>
           <li>A smaller amount means a smaller fee.</li>
+          <li>We never ask for access to your contacts or photos.</li>
         </ul>
       </Card>
     </Screen>

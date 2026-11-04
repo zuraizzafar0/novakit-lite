@@ -31,13 +31,21 @@ The brief asks for depth over breadth. It covers three moments:
 
 | Moment | Where to find it in the prototype | Code |
 |---|---|---|
-| 1. Terms and total-cost disclosure | _TBD_ | _TBD_ |
-| 2. The accept decision | _TBD_ | _TBD_ |
-| 3. A not-good path | _TBD_ | _TBD_ |
+| 1. Terms and total-cost disclosure | Pick an amount → **Review your advance**. Every amount option also shows its fee and total. | [OfferScreen.jsx](src/salary-advance/OfferScreen.jsx), [ReviewScreen.jsx](src/salary-advance/ReviewScreen.jsx) |
+| 2. The accept decision | Same screen. The total and date sit directly above **Accept**, with an equally readable **Not now**. | [ReviewScreen.jsx](src/salary-advance/ReviewScreen.jsx) |
+| 3. A not-good path: **declined** | Choose a "Declined" scenario, then tap **Check what I can get**. | [OutcomeScreens.jsx](src/salary-advance/OutcomeScreens.jsx) |
 
 ### Scenarios
 
-_TBD._ This section will list how to get to each state (for example, an approved offer, a haircut, a decline, or a late repayment), so a reviewer can see every edge state without guessing.
+Use the **Prototype scenario** panel next to the phone to simulate what NovaPay's checks return. Changing the scenario restarts from home.
+
+| Scenario | What to look at |
+|---|---|
+| Approved | Limit Rs 10,000. Rs 15,000 is locked and says why, so an over-limit request can't happen. Go through Accept to see the done screen and the updated home. |
+| Approved, amount reduced | Choose **Rs 15,000**. Final checks reduce it to Rs 10,000, and the review screen discloses this before Accept, with the fee recalculated. |
+| Declined: income not verified | Real reason plus a next step (upload a payslip). Home then shows "we need to confirm your salary". |
+| Declined: credit history | Reason given, plus a date to check again. |
+| Declined: other | The hard case: no specific reason can be shared, but there's still a date and a route to support. |
 
 ---
 
@@ -63,13 +71,17 @@ Every token or component that was added or modified, with a one-line rationale.
 
 | Change | Type | Why | File |
 |---|---|---|---|
-| _TBD_ | | | |
+| `neutral-600` (`#666666`) | Token, added | `neutral-500` fails AA for caption text (3.95:1). This reaches 5.74:1. | [tailwind.config.js](tailwind.config.js) |
+| Button `secondary` | Component, fixed | The text looked disabled, which visually pressures users toward Accept. | [Button.jsx](src/novakit/Button.jsx) |
+| Button `loading` + focus ring | Component, extended | Prevents a double Accept. Keyboard focus is now visible. | [Button.jsx](src/novakit/Button.jsx) |
+| Card, ListRow borders | Component, fixed | Hardcoded hex values replaced with neutral tokens. ListRow subtitles use `neutral-600`. | [Card.jsx](src/novakit/Card.jsx), [ListRow.jsx](src/novakit/ListRow.jsx) |
+| AmountText `tone` | Component, extended | `muted` tone for locked amounts. The colour used to be hardcoded. | [AmountText.jsx](src/novakit/AmountText.jsx) |
+| `Notice` | Component, added | Persistent inline message (info / attention) for things the user must read before deciding, such as a reduced amount. Toast is wrong for this. | [Notice.jsx](src/novakit/Notice.jsx) |
+| `AmountOption` | Component, added | Selectable amount with a locked state that explains why, so over-limit is designed out. | [AmountOption.jsx](src/novakit/AmountOption.jsx) |
 
 ### Issues found in the starter system
 
-Anything in NovaKit Lite that is wrong, inconsistent, or missing, and what was done about it.
-
-_TBD_
+Anything in NovaKit Lite that is wrong, inconsistent, or missing, and what was done about it. See [AUDIT.md](AUDIT.md).
 
 ---
 
@@ -88,7 +100,11 @@ src/
     Toast.jsx         # transient confirmation
     AmountText.jsx    # formats PKR amounts
     index.js          # barrel export -> import { Button } from "./novakit"
-  App.jsx             # app shell and home screen; the salary-advance flow starts from "See your offer"
+    Notice.jsx        # (added) inline info / attention message
+    AmountOption.jsx  # (added) selectable amount · default/selected/locked
+  salary-advance/     # the flow: data/rules, screens, layout helpers
+  prototype/          # prototype-only scenario switcher (not product UI)
+  App.jsx             # mobile frame + screen state machine
   main.jsx            # React entry point
   index.css           # Tailwind entry
 tailwind.config.js    # design tokens: colors, radius, type scale, elevation

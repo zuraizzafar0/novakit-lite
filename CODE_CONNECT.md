@@ -2,6 +2,8 @@
 
 A Code Connect-style mapping for every component and token this PR **added or changed**. For each component it gives the Figma component name, how its Figma properties map to React props, the auto-layout spec, and how to use it in code.
 
+**See every variant rendered from the real code:** https://novakit-lite-liard.vercel.app/?gallery. Labels use Figma's `Property=Value` syntax, so the page imports into Figma (e.g. with html.to.design) and combines straight into component sets.
+
 **How to read the property tables**
 - **Figma properties:** **Variant** = variant property · **Boolean** = boolean property · **Text** = text property · **Instance** = instance-swap slot.
 - **"Code only"** = behaviour Figma can't model (handlers, data). It's listed so nothing is implied that the design file can't show.

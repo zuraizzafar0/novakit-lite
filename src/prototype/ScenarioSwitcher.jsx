@@ -66,6 +66,9 @@ export default function ScenarioSwitcher({ scenarios, value, onChange, onReset, 
       >
         Restart from home
       </button>
+      <a href="?gallery" className="block text-body font-semibold text-brand underline underline-offset-2">
+        Component sheet (all variants)
+      </a>
     </aside>
   );
 }

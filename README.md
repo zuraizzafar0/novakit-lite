@@ -4,8 +4,6 @@ A coded, clickable, mobile-viewport prototype of NovaPay's **first-time salary-a
 
 This branch (`salary-advance-trust-pass`) adds the salary-advance flow and makes the smallest set of changes to the design system that the flow needs. The untouched starter is preserved as the first commit on `main`, so the pull request diff shows exactly what changed.
 
-> **Status: work in progress.** Sections marked _TBD_ get filled in as the work lands.
-
 ---
 
 ## Run it
@@ -27,7 +25,7 @@ The app renders inside a ~390px mobile frame. Open it on desktop, or use your br
 
 ## What to review
 
-The brief asks for depth over breadth. It covers three moments:
+The brief asks for depth over breadth. It covers three moments. Start the flow with **Check what I can get** on the home screen, and use the scenario panel next to the phone to switch states.
 
 | Moment | Where to find it in the prototype | Code |
 |---|---|---|
@@ -127,18 +125,6 @@ PRODUCT_REFERENCE.md  # product rules for the salary advance
 ```
 
 Design tokens live in `tailwind.config.js` and are used as Tailwind classes, such as `bg-brand`, `text-neutral-700`, `rounded-md`, `shadow-card`, and `text-title`. New screens are built from these tokens and the components in `src/novakit/`.
-
----
-
-## Submission materials
-
-| Item | Link |
-|---|---|
-| Pull request | _TBD_ |
-| Live prototype | _TBD_ |
-| Written submission | _TBD_ |
-| Figma component sheet | _TBD_ |
-| AI process log / recording | _TBD_ |
 
 ---
 

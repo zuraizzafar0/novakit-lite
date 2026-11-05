@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { AmountOption, AmountText, Button, Card, ListRow, Notice, TextField } from "../novakit";
-import { Screen, OutcomeIcon } from "./layout.jsx";
-import { AGREEMENT, feeFor, fmt, NEW_DATE_OPTIONS, REPAYMENT_DATE, repayFor } from "./data.js";
+import { Screen, OutcomeIcon, ActionRow, FactList } from "./layout.jsx";
+import { AGREEMENT, DEFAULT_DATE, feeFor, fmt, LATE_STATES, NEW_DATE_OPTIONS, REPAYMENT_DATE, repayFor } from "./data.js";
 
 /**
  * Repayment: the third hard moment.
@@ -28,14 +28,23 @@ export function reminderCopy(repay, owed) {
       return `Today we'll collect Rs ${fmt(owed)} for your salary advance, once your salary arrives in your wallet.`;
     case "late":
       return `We couldn't collect Rs ${fmt(owed)} on ${REPAYMENT_DATE.day}. No late fee has been added. Open NovaPay to see your options.`;
+    case "missed_new_date":
+      return `We couldn't collect Rs ${fmt(owed)} on ${repay.newDate}. Nothing extra has been added. Open NovaPay to pay some now or talk to us.`;
+    case "pre_default":
+      return `Your salary advance will be 30 days overdue on ${DEFAULT_DATE.day}. Nothing extra has been added. Open NovaPay to see what changes and your options.`;
     default:
       return null;
   }
 }
 
 function dueLine(repay) {
-  if (repay.newDate) return `Due on ${repay.newDate}`;
   switch (repay.state) {
+    case "rescheduled":
+      return `Due on ${repay.newDate}`;
+    case "missed_new_date":
+      return `Was due on ${repay.newDate} (moved from ${REPAYMENT_DATE.day})`;
+    case "pre_default":
+      return `${repay.daysLate} days overdue · 30 days on ${DEFAULT_DATE.day}`;
     case "due_soon":
       return `Due on ${REPAYMENT_DATE.long} · in 3 days`;
     case "due_today":
@@ -47,32 +56,38 @@ function dueLine(repay) {
   }
 }
 
-export function RepaymentScreen({ amount, repay, onHome, onPay, onChooseAmount, onChooseDate }) {
+export function RepaymentScreen({ amount, repay, onHome, onPay, onChooseAmount, onChooseDate, onTalkToUs }) {
   const total = repayFor(amount);
   const owed = total - repay.paid;
-  const late = repay.state === "late" && !repay.newDate;
+  const late = LATE_STATES.includes(repay.state);
+  const preDefault = repay.state === "pre_default";
   const payable = Math.min(repay.wallet, owed);
 
   let footer;
   if (late) {
     footer = (
       <>
-        {payable > 0 ? (
-          <>
-            <Button size="lg" onClick={onChooseAmount}>
-              Pay some now
-            </Button>
-          </>
+        {/* Before default, a plan with a person is the most useful step, so it leads. */}
+        {preDefault ? (
+          <Button size="lg" onClick={onTalkToUs}>
+            Talk to us about a plan
+          </Button>
         ) : null}
+        {payable > 0 ? (
+          <Button size={preDefault ? "md" : "lg"} variant={preDefault ? "secondary" : "primary"} onClick={onChooseAmount}>
+            Pay some now
+          </Button>
+        ) : null}
+        {/* One free date change. Once it's used, a person takes over: self-serve has run out. */}
         {!repay.usedDateChange ? (
           <Button variant="secondary" onClick={onChooseDate}>
             Choose a new date
           </Button>
-        ) : (
-          <Button variant="secondary" onClick={onHome}>
-            Back to home
+        ) : !preDefault ? (
+          <Button variant="secondary" onClick={onTalkToUs}>
+            Talk to us
           </Button>
-        )}
+        ) : null}
       </>
     );
   } else {
@@ -93,10 +108,19 @@ export function RepaymentScreen({ amount, repay, onHome, onPay, onChooseAmount, 
   return (
     <Screen title="Your salary advance" onBack={onHome} footer={footer}>
       {late ? (
-        <Notice tone="attention" title={`We couldn't collect your repayment on ${REPAYMENT_DATE.day}`}>
-          {repay.paid > 0
-            ? `Thanks for paying Rs ${fmt(repay.paid)}. Rs ${fmt(owed)} is left, and nothing extra has been added.`
-            : `Your wallet had less than the Rs ${fmt(total)} due. Nothing extra has been added.`}
+        <Notice
+          tone="attention"
+          title={
+            preDefault
+              ? `On ${DEFAULT_DATE.day}, this will be 30 days overdue`
+              : `We couldn't collect your repayment on ${repay.state === "missed_new_date" ? repay.newDate : REPAYMENT_DATE.day}`
+          }
+        >
+          {preDefault
+            ? "We're telling you now so nothing comes as a surprise. Here's what would change, and what won't."
+            : repay.paid > 0
+              ? `Thanks for paying Rs ${fmt(repay.paid)}. Rs ${fmt(owed)} is left, and nothing extra has been added.`
+              : `Your wallet had less than the Rs ${fmt(owed)} due. Nothing extra has been added.`}
         </Notice>
       ) : null}
 
@@ -119,7 +143,25 @@ export function RepaymentScreen({ amount, repay, onHome, onPay, onChooseAmount, 
         />
       </Card>
 
-      {late ? (
+      {preDefault ? (
+        <>
+          <Card className="space-y-2">
+            <div className="text-body font-semibold text-neutral-900">What changes on {DEFAULT_DATE.day} if it isn't repaid</div>
+            <ul className="text-body text-neutral-700 space-y-1 list-disc pl-5">
+              <li>Your NovaPay credit record will show this advance as overdue. This can lower future limits.</li>
+              <li>Salary advances stay paused until it's repaid.</li>
+            </ul>
+          </Card>
+          <FactList
+            facts={[
+              `The amount stays Rs ${fmt(owed)}. No fees, ever.`,
+              "We'll still only collect from your salary",
+              "We'll never contact your family, friends or employer",
+              "A plan agreed with us before 31 Dec stops these changes",
+            ]}
+          />
+        </>
+      ) : late ? (
         <Card className="space-y-2">
           <div className="text-body font-semibold text-neutral-900">What happens now</div>
           <ul className="text-body text-neutral-700 space-y-1 list-disc pl-5">
@@ -244,6 +286,57 @@ export function PayAmountScreen({ owed, wallet, onBack, onConfirm }) {
 }
 
 /** Move the repayment date once, for free (benchmark: Tabby "Extend"). */
+/**
+ * Talk to us: appears only once self-serve options have run out (the free
+ * date change is used). Human help is for when the user can't fix it alone.
+ */
+export function TalkToUsScreen({ owed, onBack }) {
+  const [requested, setRequested] = useState(null);
+  return (
+    <Screen
+      title="Talk to us"
+      onBack={onBack}
+      footer={
+        <Button variant="secondary" onClick={onBack}>
+          Back
+        </Button>
+      }
+    >
+      <h2 className="text-title text-neutral-900">Let's find a way to repay Rs {fmt(owed)} that works for you</h2>
+
+      <Card className="space-y-2">
+        <div className="text-body font-semibold text-neutral-900">What we can set up together</div>
+        <ul className="text-body text-neutral-700 space-y-1 list-disc pl-5">
+          <li>Smaller payments over a few weeks</li>
+          <li>Payment dates that match when you're paid</li>
+        </ul>
+      </Card>
+
+      <Card className="py-1">
+        <ActionRow
+          icon="person"
+          title="Request a call back"
+          detail="A NovaPay person calls you, at a time you choose"
+          done={requested === "call"}
+          doneText="Requested. We'll call you within 1 working day."
+          onClick={() => setRequested("call")}
+        />
+        <div className="border-t border-neutral-200" />
+        <ActionRow
+          icon="info"
+          title="Message us in the app"
+          detail="Reply when it suits you"
+          done={requested === "chat"}
+          doneText="Sent. A person will reply in the app within a few hours."
+          onClick={() => setRequested("chat")}
+        />
+      </Card>
+
+      <FactList facts={["Talking to us is free and adds nothing to what you owe", "We'll never contact your family, friends or employer"]} />
+    </Screen>
+  );
+}
+
 export function NewDateScreen({ owed, onBack, onConfirm }) {
   const [date, setDate] = useState(null);
   return (

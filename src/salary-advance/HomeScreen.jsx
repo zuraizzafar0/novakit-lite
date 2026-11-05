@@ -1,5 +1,5 @@
 import { AppBar, AmountText, Button, Card, Icon, ListRow, Notice } from "../novakit";
-import { fmt, repayFor, REPAYMENT_DATE, RETRY_DATE } from "./data.js";
+import { DEFAULT_DATE, fmt, LATE_STATES, repayFor, REPAYMENT_DATE, RETRY_DATE } from "./data.js";
 
 /**
  * Home. The salary-advance card changes with the user's state:
@@ -63,11 +63,17 @@ function AdvanceCard({ advance, repay, status, onSeeOffer, onUploadPayslip, onOp
     }
 
     // Late: amber attention, never red, never loss-framed (KOHO, what not to do).
-    if (repay.state === "late" && !repay.newDate) {
+    if (LATE_STATES.includes(repay.state)) {
+      const title =
+        repay.state === "pre_default"
+          ? `Will be 30 days overdue on ${DEFAULT_DATE.day}`
+          : repay.state === "missed_new_date"
+            ? `Your ${repay.newDate.replace(" 2026", "")} repayment didn't go through`
+            : "Your repayment didn't go through";
       return (
         <Card className="space-y-3">
-          <Notice tone="attention" title="Your repayment didn't go through">
-            Rs {fmt(owed)} is {repay.daysLate} days late. No late fee has been added.
+          <Notice tone="attention" title={title}>
+            Rs {fmt(owed)} is {repay.daysLate} days late. Nothing extra has been added.
           </Notice>
           <Button variant="secondary" onClick={onOpenAdvance}>
             See your options
@@ -77,7 +83,7 @@ function AdvanceCard({ advance, repay, status, onSeeOffer, onUploadPayslip, onOp
     }
 
     // Before it's late: amount + date first, no alarm styling (Afterpay).
-    const when = repay.newDate
+    const when = repay.state === "rescheduled"
       ? `Due ${repay.newDate}`
       : repay.state === "due_today"
         ? "Due today"

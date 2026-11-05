@@ -48,10 +48,12 @@ Use the **Prototype scenario** panel next to the phone to simulate what NovaPay'
 | Declined: other | The hard case: no specific reason can be shared, but there's still a date, a reminder and a way to ask for human review. |
 | Reminder: due in 3 days / due today | The reminder notification copy, and a calm repayment card with the amount and date first and no alarm styling. |
 | Late: payment didn't go through | Amber, not red. One sentence on what happened, no late fee, and two ways forward: pay an amount you choose (each suggestion shows what it leaves in your wallet), or move the date once for free. |
+| Late: missed the new date | The user moved the date to 14 Dec and missed it. There's no second free date change. **"Talk to us"** replaces it, because self-serve has run out: a person can set up smaller payments or better-timed dates. |
+| Heads-up: 5 days before default | Day 25. It says exactly what changes on day 30 (overdue on the NovaPay credit record, advances paused) and what never changes (no fees, salary-only collection, no contact with family or employer). **"Talk to us about a plan"** leads, and a plan agreed before day 30 stops those changes. |
 
 **Something goes wrong:** checkboxes in the panel make the eligibility check, or the send after Accept, fail once. The error screens say the problem is ours, that it isn't a decision about the user, and exactly what did and didn't happen to their money.
 
-**Deep links:** add `?scenario=<id>&screen=<screen>` to the URL, for example `?scenario=approved&screen=review`, `?scenario=other&screen=declined` or `?scenario=late&screen=repayment`.
+**Deep links:** add `?scenario=<id>&screen=<screen>` to the URL, for example `?scenario=approved&screen=review`, `?scenario=other&screen=declined` or `?scenario=late&screen=repayment`, `?scenario=pre_default&screen=repayment` or `?scenario=missed_new_date&screen=talk_to_us`.
 
 ---
 

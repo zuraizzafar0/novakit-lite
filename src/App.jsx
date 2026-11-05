@@ -9,12 +9,14 @@ import {
   RepaymentScreen,
   NewDateScreen,
   PayAmountScreen,
+  TalkToUsScreen,
   RepaymentDoneScreen,
   reminderCopy,
 } from "./salary-advance/RepaymentScreens.jsx";
 import { Waiting, ProblemScreen } from "./salary-advance/layout.jsx";
 import {
   ADVANCE_AMOUNT_FOR_REPAY_SCENARIOS,
+  LATE_STATES,
   SCENARIOS,
   STARTING_BALANCE,
   fmt,
@@ -27,16 +29,17 @@ import {
  * Applying:  home → checking → offer → final checks → review (terms + accept) → done
  *                           ↘ declined → (payslip uploaded)
  * Repaying:  reminder → repayment details → (late) pay part now / choose a new date
+ *            → (new date missed) pay part now / talk to us → (day 25) heads-up before default
  */
 function initialState(scenario) {
   if (scenario.repayment) {
-    const { state, wallet, daysLate = 0 } = scenario.repayment;
+    const { state, wallet, daysLate = 0, newDate = null } = scenario.repayment;
     return {
       screen: "home",
       requested: null,
       status: null,
       advance: { amount: ADVANCE_AMOUNT_FOR_REPAY_SCENARIOS },
-      repay: { state, wallet, daysLate, paid: 0, newDate: null, usedDateChange: false },
+      repay: { state, wallet, daysLate, paid: 0, newDate, usedDateChange: Boolean(newDate) },
       push: true,
       doneMessage: null,
     };
@@ -56,7 +59,7 @@ const CHECK_STEPS = ["Your NovaPay account", "Your salary deposits", "Working ou
 
 // Deep links for reviewers, e.g. ?scenario=late&screen=repayment
 // or ?scenario=approved&fail=send&screen=review
-const DEEP_LINK_SCREENS = ["home", "offer", "review", "declined", "repayment", "pay_amount", "checking", "check_failed", "send_failed"];
+const DEEP_LINK_SCREENS = ["home", "offer", "review", "declined", "repayment", "pay_amount", "talk_to_us", "checking", "check_failed", "send_failed"];
 function fromUrl() {
   const q = new URLSearchParams(window.location.search);
   const scenario = SCENARIOS.find((x) => x.id === q.get("scenario")) || SCENARIOS[0];
@@ -72,7 +75,7 @@ function fromUrl() {
     } else if (screen === "declined" && scenario.decline) state.screen = "declined";
     else if (screen === "repayment" && scenario.repayment) state.screen = "repayment";
     else if (["checking", "check_failed"].includes(screen) && !scenario.repayment) state.screen = screen;
-    else if (screen === "pay_amount" && scenario.repayment?.state === "late") state.screen = "pay_amount";
+    else if (["pay_amount", "talk_to_us"].includes(screen) && LATE_STATES.includes(scenario.repayment?.state)) state.screen = screen;
     state.push = state.push && state.screen === "home";
   }
   return { scenarioId: scenario.id, state, problems };
@@ -232,6 +235,7 @@ export default function App() {
           onHome={home}
           onChooseDate={() => go("new_date")}
           onChooseAmount={() => go("pay_amount")}
+          onTalkToUs={() => go("talk_to_us")}
           onPay={(amount) => pay(amount)}
         />
       );
@@ -246,6 +250,9 @@ export default function App() {
         />
       );
       break;
+    case "talk_to_us":
+      view = <TalkToUsScreen owed={owed} onBack={() => go("repayment")} />;
+      break;
     case "new_date":
       view = (
         <NewDateScreen
@@ -253,7 +260,7 @@ export default function App() {
           onBack={() => go("repayment")}
           onConfirm={(date) =>
             set({
-              repay: { ...s.repay, newDate: date, usedDateChange: true },
+              repay: { ...s.repay, state: "rescheduled", newDate: date, usedDateChange: true },
               doneMessage: {
                 title: `Your new date is ${date}. No extra cost.`,
               },

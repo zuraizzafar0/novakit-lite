@@ -24,6 +24,12 @@ export const RETRY_DATE = "5 Dec 2026";
 // ASSUMPTION: a late borrower can move the date once, free, to any of these (all < 30 days late).
 export const NEW_DATE_OPTIONS = ["7 Dec 2026", "14 Dec 2026", "21 Dec 2026"];
 
+// Default = 30+ days past the ORIGINAL due date (PRODUCT_REFERENCE.md).
+export const DEFAULT_DATE = { short: "31 Dec 2026", day: "31 Dec" };
+
+/** Repayment states where a collection has been missed. */
+export const LATE_STATES = ["late", "missed_new_date", "pre_default"];
+
 export const STARTING_BALANCE = 4250;
 
 // The record of what the user agreed to, shown after accepting.
@@ -98,6 +104,20 @@ export const SCENARIOS = [
     label: "Late: payment didn't go through",
     description: "Prototype date: 4 Dec. Wallet was short. Shows the ways forward.",
     repayment: { state: "late", wallet: 6200, daysLate: 3 },
+  },
+  {
+    id: "missed_new_date",
+    group: "Repaying",
+    label: "Late: missed the new date",
+    description: "Prototype date: 17 Dec. Moved to 14 Dec, missed again. 'Talk to us' replaces a second date change.",
+    repayment: { state: "missed_new_date", wallet: 3000, daysLate: 16, newDate: "14 Dec 2026" },
+  },
+  {
+    id: "pre_default",
+    group: "Repaying",
+    label: "Heads-up: 5 days before default",
+    description: "Prototype date: 26 Dec. Says exactly what changes on day 30, before it happens.",
+    repayment: { state: "pre_default", wallet: 1200, daysLate: 25, newDate: "14 Dec 2026" },
   },
 ];
 

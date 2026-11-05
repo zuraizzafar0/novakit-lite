@@ -119,14 +119,7 @@ export function ProblemScreen({ title, heading, facts, retryLabel = "Try again",
         <OutcomeIcon tone="neutral" name="alert" />
         <h2 className="text-title text-neutral-900">{heading}</h2>
       </div>
-      <ul className="rounded-md bg-neutral-50 border border-neutral-200 p-3 space-y-2">
-        {facts.map((f) => (
-          <li key={f} className="flex gap-2 text-body text-neutral-900">
-            <Icon name="check" size={18} className="mt-0.5 text-success" />
-            {f}
-          </li>
-        ))}
-      </ul>
+      <FactList facts={facts} />
     </Screen>
   );
 }
@@ -159,5 +152,47 @@ export function Checklist({ title, items }) {
         />
       ))}
     </Card>
+  );
+}
+
+/** Reassuring facts about what did and didn't happen. Visible, not fine print. */
+export function FactList({ facts }) {
+  return (
+    <ul className="rounded-md bg-neutral-50 border border-neutral-200 p-3 space-y-2">
+      {facts.map((f) => (
+        <li key={f} className="flex gap-2 text-body text-neutral-900">
+          <Icon name="check" size={18} className="mt-0.5 text-success" />
+          {f}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/**
+ * A tappable action row (icon · title + detail · chevron). Once done, it
+ * confirms in place instead of navigating away.
+ */
+export function ActionRow({ icon, title, detail, done = false, doneText, onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={done ? undefined : onClick}
+      aria-disabled={done || undefined}
+      className="w-full flex items-center gap-3 py-3 text-left rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+    >
+      <span
+        className={`h-9 w-9 shrink-0 rounded-full flex items-center justify-center ${
+          done ? "bg-success text-white motion-safe:animate-pop" : "bg-brand-50 text-brand"
+        }`}
+      >
+        <Icon name={done ? "check" : icon} size={18} />
+      </span>
+      <span className="min-w-0 flex-1" aria-live="polite">
+        <span className="block text-body font-semibold text-neutral-900">{title}</span>
+        <span className="block text-caption text-neutral-600">{done ? doneText : detail}</span>
+      </span>
+      {!done ? <Icon name="chevron-right" size={18} className="text-neutral-600" /> : null}
+    </button>
   );
 }

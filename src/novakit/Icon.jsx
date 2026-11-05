@@ -14,6 +14,8 @@ const PATHS = {
   alert: "M12 7v6.5M12 17v.01",
   "chevron-left": "M15 5l-7 7 7 7",
   "chevron-down": "M6 9l6 6 6-6",
+  "chevron-right": "M9 5l7 7-7 7",
+  person: "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM5 20a7 7 0 0 1 14 0",
   "arrow-up": "M12 19V5M6 11l6-6 6 6",
   "arrow-down": "M12 5v14M6 13l6 6 6-6",
   refresh: "M19 12a7 7 0 1 1-2.05-4.95M19 4.5V9h-4.5",

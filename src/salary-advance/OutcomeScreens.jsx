@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button, Card, Icon, ListRow, Notice, Timeline } from "../novakit";
-import { Screen, OutcomeIcon, Checklist } from "./layout.jsx";
+import { Screen, OutcomeIcon, Checklist, ActionRow, FactList } from "./layout.jsx";
 import { CHECKLIST, fmt, repayFor, REPAYMENT_DATE, RETRY_DATE } from "./data.js";
 
 /**
@@ -68,6 +68,7 @@ const DECLINE_COPY = {
 
 export function DeclinedScreen({ reason, onHome, onUploadPayslip }) {
   const [notify, setNotify] = useState(false);
+  const [review, setReview] = useState(false);
   const copy = DECLINE_COPY[reason] || DECLINE_COPY.other;
   const checklist = CHECKLIST[reason];
   const canAct = reason === "income_unverified";
@@ -104,34 +105,48 @@ export function DeclinedScreen({ reason, onHome, onUploadPayslip }) {
         )
       }
     >
-      <div className="space-y-2 pt-2">
-        <OutcomeIcon tone="neutral" name="info" />
+      {/* Prominent through structure, not alarm colour: brand tint, a clear
+          headline, then Why → What you can do → what didn't happen. */}
+      <div className="space-y-3 pt-2">
+        <OutcomeIcon tone="brand" name="info" />
         <h2 className="text-title text-neutral-900">{copy.title}</h2>
+        {!canAct ? (
+          <p className="inline-flex items-center gap-2 rounded-full bg-neutral-100 px-3 py-1 text-caption text-neutral-900">
+            <Icon name="clock" size={16} /> You can check again from {RETRY_DATE}
+          </p>
+        ) : null}
       </div>
 
       {checklist ? (
         <Checklist
-          title="What we checked"
+          title="Why: what we checked"
           items={checklist.map((item) => ({
             ...item,
             hint: canAct ? "A recent payslip can confirm this" : "Not met this time",
           }))}
         />
-      ) : null}
+      ) : (
+        <Card className="space-y-1">
+          <div className="text-body font-semibold text-neutral-900">Why</div>
+          <p className="text-body text-neutral-700">
+            We can't share the specific reason for this decision. We know that's frustrating.
+          </p>
+        </Card>
+      )}
 
-      <Card className="space-y-1">
-        <div className="text-body font-semibold text-neutral-900">What you can do</div>
-        <p className="text-body text-neutral-700">
-          {canAct
-            ? "Upload a recent payslip and we'll check again. It usually takes 1 working day."
-            : `${reason === "other" ? "We can't share the specific reason. " : ""}You can check again from ${RETRY_DATE}. If you think we've got this wrong, ask for a person to review it from Help in the app.`}
-        </p>
+      <Card className="py-1">
+        <div className="text-body font-semibold text-neutral-900 pt-3">What you can do</div>
+        <ActionRow
+          icon="person"
+          title="Ask a person to review this"
+          detail="Our checks decided this automatically. A person can take a second look."
+          done={review}
+          doneText="Review requested. We'll reply in the app within 2 working days."
+          onClick={() => setReview(true)}
+        />
       </Card>
 
-      <p className="text-caption text-neutral-600">
-        This decision was made automatically by our checks. Your NovaPay wallet works as usual, and nothing
-        has been charged.
-      </p>
+      <FactList facts={["Your NovaPay wallet works as usual", "Nothing has been charged"]} />
     </Screen>
   );
 }

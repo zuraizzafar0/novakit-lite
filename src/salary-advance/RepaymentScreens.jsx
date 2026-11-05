@@ -62,9 +62,6 @@ export function RepaymentScreen({ amount, repay, onHome, onPay, onChooseAmount, 
             <Button size="lg" onClick={onChooseAmount}>
               Pay some now
             </Button>
-            <p className="text-caption text-neutral-600 text-center">
-              You choose how much. The rest can come later.
-            </p>
           </>
         ) : null}
         {!repay.usedDateChange ? (

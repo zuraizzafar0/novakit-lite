@@ -4,7 +4,6 @@ import PushPreview from "./prototype/PushPreview.jsx";
 import HomeScreen from "./salary-advance/HomeScreen.jsx";
 import OfferScreen from "./salary-advance/OfferScreen.jsx";
 import ReviewScreen from "./salary-advance/ReviewScreen.jsx";
-import AmountChangedScreen from "./salary-advance/AmountChangedScreen.jsx";
 import { DoneScreen, DeclinedScreen, PayslipSentScreen } from "./salary-advance/OutcomeScreens.jsx";
 import {
   RepaymentScreen,
@@ -18,7 +17,6 @@ import {
   ADVANCE_AMOUNT_FOR_REPAY_SCENARIOS,
   SCENARIOS,
   STARTING_BALANCE,
-  disbursedFor,
   fmt,
   repayFor,
 } from "./salary-advance/data.js";
@@ -55,16 +53,15 @@ function initialState(scenario) {
 }
 
 const CHECK_STEPS = ["Your NovaPay account", "Your salary deposits", "Working out your limit"];
-const FINAL_STEPS = ["Confirming your payday", "Final check on the amount"];
 
 // Deep links for reviewers, e.g. ?scenario=late&screen=repayment
-// or ?scenario=approved&fail=haircut&screen=amount_changed
-const DEEP_LINK_SCREENS = ["home", "offer", "review", "declined", "repayment", "pay_amount", "amount_changed", "checking", "check_failed", "send_failed"];
+// or ?scenario=approved&fail=send&screen=review
+const DEEP_LINK_SCREENS = ["home", "offer", "review", "declined", "repayment", "pay_amount", "checking", "check_failed", "send_failed"];
 function fromUrl() {
   const q = new URLSearchParams(window.location.search);
   const scenario = SCENARIOS.find((x) => x.id === q.get("scenario")) || SCENARIOS[0];
   const fails = (q.get("fail") || "").split(",");
-  const problems = { check: fails.includes("check"), send: fails.includes("send"), haircut: fails.includes("haircut") };
+  const problems = { check: fails.includes("check"), send: fails.includes("send") };
   const state = initialState(scenario);
   const screen = q.get("screen");
   const applying = !scenario.decline && !scenario.repayment;
@@ -72,10 +69,6 @@ function fromUrl() {
     if (["review", "send_failed", "offer"].includes(screen) && applying) {
       state.requested = screen === "offer" ? null : scenario.limit;
       state.screen = screen;
-    } else if (screen === "amount_changed" && applying) {
-      problems.haircut = true;
-      state.requested = scenario.limit;
-      state.screen = "amount_changed";
     } else if (screen === "declined" && scenario.decline) state.screen = "declined";
     else if (screen === "repayment" && scenario.repayment) state.screen = "repayment";
     else if (["checking", "check_failed"].includes(screen) && !scenario.repayment) state.screen = screen;
@@ -105,13 +98,12 @@ export default function App() {
 
   // Simulated network waits.
   useEffect(() => {
-    if (s.screen !== "checking" && s.screen !== "final_checks") return;
+    if (s.screen !== "checking") return;
     const t = setTimeout(() => {
       if (s.screen === "checking" && problems.check && !failed.check) {
         setFailed((f) => ({ ...f, check: true }));
         set({ screen: "check_failed" });
-      } else if (s.screen === "checking") set({ screen: scenario.decline ? "declined" : "offer" });
-      else set({ screen: disbursedFor(s.requested, problems.haircut) < s.requested ? "amount_changed" : "review" });
+      } else set({ screen: scenario.decline ? "declined" : "offer" });
     }, 1800);
     return () => clearTimeout(t);
   }, [s.screen, scenario, problems, failed]);
@@ -151,26 +143,15 @@ export default function App() {
           limit={scenario.limit}
           initialAmount={s.requested}
           onBack={home}
-          onContinue={(amount) => set({ requested: amount, screen: "final_checks" })}
-        />
-      );
-      break;
-    case "final_checks":
-      view = (
-        <Waiting
-          title="Salary advance"
-          heading="Running final checks"
-          steps={FINAL_STEPS}
-          note="Nothing is sent until you've seen the full cost and tapped Accept."
+          onContinue={(amount) => set({ requested: amount, screen: "review" })}
         />
       );
       break;
     case "review":
       view = (
         <ReviewScreen
-          requested={s.requested}
-          disbursed={disbursedFor(s.requested, problems.haircut)}
-          onBack={() => go(disbursedFor(s.requested, problems.haircut) < s.requested ? "amount_changed" : "offer")}
+          amount={s.requested}
+          onBack={() => go("offer")}
           onDecline={home}
           onAccept={() => {
             if (problems.send && !failed.send) {
@@ -178,24 +159,13 @@ export default function App() {
               set({ screen: "send_failed" });
               return;
             }
-            const amount = disbursedFor(s.requested, problems.haircut);
+            const amount = s.requested;
             set({
               advance: { amount },
               repay: { ...s.repay, state: "active", wallet: s.repay.wallet + amount },
               screen: "done",
             });
           }}
-        />
-      );
-      break;
-    case "amount_changed":
-      view = (
-        <AmountChangedScreen
-          requested={s.requested}
-          disbursed={disbursedFor(s.requested, problems.haircut)}
-          onContinue={() => go("review")}
-          onChangeAmount={() => set({ requested: null, screen: "offer" })}
-          onCancel={home}
         />
       );
       break;
@@ -224,9 +194,9 @@ export default function App() {
             "Nothing was charged, and you don't owe anything",
             "Your offer and terms are unchanged",
           ]}
-          retryLabel={`Try again: get Rs ${fmt(disbursedFor(s.requested || 0, problems.haircut))}`}
+          retryLabel={`Try again: get Rs ${fmt(s.requested || 0)}`}
           onRetry={() => {
-            const amount = disbursedFor(s.requested, problems.haircut);
+            const amount = s.requested;
             set({
               advance: { amount },
               repay: { ...s.repay, state: "active", wallet: s.repay.wallet + amount },

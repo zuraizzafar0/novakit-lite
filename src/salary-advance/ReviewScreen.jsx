@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { AmountText, Button, Card, ListRow, Notice, Timeline } from "../novakit";
+import { AmountText, Button, Card, ListRow, Timeline } from "../novakit";
 import { Screen } from "./layout.jsx";
 import { feeFor, fmt, repayFor, REPAYMENT_DATE } from "./data.js";
 
@@ -15,12 +15,11 @@ import { feeFor, fmt, repayFor, REPAYMENT_DATE } from "./data.js";
  * - Afterpay (what not to do): no fee hidden behind an info icon, no
  *   consent checkbox above a wall of legal text.
  *
- * A haircut gets its own decision step first (AmountChangedScreen); here we
- * only remind the user that the amount was reduced.
+ * The amount here is the amount shown on the offer: it is honoured, never
+ * reduced after the fact.
  */
-export default function ReviewScreen({ requested, disbursed, onBack, onDecline, onAccept }) {
+export default function ReviewScreen({ amount: disbursed, onBack, onDecline, onAccept }) {
   const [sending, setSending] = useState(false);
-  const reduced = disbursed < requested;
   const fee = feeFor(disbursed);
   const repay = repayFor(disbursed);
 
@@ -47,11 +46,6 @@ export default function ReviewScreen({ requested, disbursed, onBack, onDecline, 
         </>
       }
     >
-      {reduced ? (
-        <Notice tone="info" title={`Reduced from Rs ${fmt(requested)} after final checks`}>
-          Everything below is worked out on Rs {fmt(disbursed)}.
-        </Notice>
-      ) : null}
 
       {/* Headline: the commitment in one sentence (Affirm). */}
       <div>

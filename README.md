@@ -42,16 +42,16 @@ Use the **Prototype scenario** panel next to the phone to simulate what NovaPay'
 
 | Scenario | What to look at |
 |---|---|
-| Approved | Limit Rs 10,000. Rs 15,000 is **locked**. A "How to unlock" link expands a factual checklist on request, so it isn't pushed at the moment of choosing. Only amounts we can actually give are selectable, so over-limit and bait-and-switch reductions are designed out. Go through Accept to see the done screen and the updated home. |
+| Approved | Limit Rs 10,000. Rs 15,000 is **locked**. A "How to unlock" link expands a factual checklist on request, so it isn't pushed at the moment of choosing. Only amounts we can actually give are selectable, so over-limit requests and after-the-fact reductions ("haircuts") are designed out. The amount shown is honoured for 24 hours. Go through Accept to see the done screen and the updated home. |
 | Declined: income not verified | Real reason plus a next step (upload a payslip). Home then shows "we need to confirm your salary". |
 | Declined: credit history | Reason given, plus a date to check again. |
 | Declined: other | The hard case: no specific reason can be shared, but there's still a date, a reminder and a way to ask for human review. |
 | Reminder: due in 3 days / due today | The reminder notification copy, and a calm repayment card with the amount and date first and no alarm styling. |
 | Late: payment didn't go through | Amber, not red. One sentence on what happened, no late fee, and two ways forward: pay an amount you choose (each suggestion shows what it leaves in your wallet), or move the date once for free. |
 
-**Something goes wrong:** checkboxes in the panel make the eligibility check, or the send after Accept, fail once. The error screens say the problem is ours, that it isn't a decision about the user, and exactly what did and didn't happen to their money. A third checkbox triggers the rare **reduced amount** fallback, for when something changes between offer and Accept. A dedicated "Your amount has changed" step shows asked vs. can-send side by side and offers continue, choose a different amount, or don't take an advance.
+**Something goes wrong:** checkboxes in the panel make the eligibility check, or the send after Accept, fail once. The error screens say the problem is ours, that it isn't a decision about the user, and exactly what did and didn't happen to their money.
 
-**Deep links:** add `?scenario=<id>&screen=<screen>` to the URL, for example `?scenario=approved&screen=amount_changed`, `?scenario=other&screen=declined` or `?scenario=late&screen=repayment`.
+**Deep links:** add `?scenario=<id>&screen=<screen>` to the URL, for example `?scenario=approved&screen=review`, `?scenario=other&screen=declined` or `?scenario=late&screen=repayment`.
 
 ---
 
@@ -82,7 +82,7 @@ Every token or component that was added or modified, with a one-line rationale.
 | Button `loading` + focus ring | Component, extended | Prevents a double Accept. Keyboard focus is now visible. | [Button.jsx](src/novakit/Button.jsx) |
 | Card, ListRow borders | Component, fixed | Hardcoded hex values replaced with neutral tokens. ListRow subtitles use `neutral-600`. | [Card.jsx](src/novakit/Card.jsx), [ListRow.jsx](src/novakit/ListRow.jsx) |
 | AmountText `tone` | Component, extended | `muted` tone for locked amounts. The colour used to be hardcoded. | [AmountText.jsx](src/novakit/AmountText.jsx) |
-| `Notice` | Component, added | Persistent inline message (info / attention) for things the user must read before deciding, such as a reduced amount. Toast is wrong for this. | [Notice.jsx](src/novakit/Notice.jsx) |
+| `Notice` | Component, added | Persistent inline message (info / attention) for things the user must read before acting, such as a missed repayment. Toast is wrong for this. | [Notice.jsx](src/novakit/Notice.jsx) |
 | `Timeline` | Component, added | A vertical "when → what → how much" sequence for terms, confirmation and repayment. | [Timeline.jsx](src/novakit/Timeline.jsx) |
 | TextField `label` / `helper` / `invalid` | Component, extended | Needed to type a partial repayment amount. It had no label or error state. Invalid isn't red, because a limit isn't a mistake. | [TextField.jsx](src/novakit/TextField.jsx) |
 | `Icon` | Component, added | A consistent SVG set replacing text glyphs (‹ ✓ ! i × ↑ ↓), which render differently per platform. Decorative by default, with a `label` when the icon carries meaning (money in/out). | [Icon.jsx](src/novakit/Icon.jsx) |

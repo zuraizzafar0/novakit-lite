@@ -1,11 +1,11 @@
 /**
  * Notice — NovaKit Lite (added)
  * An inline, persistent message that stays on screen until the user moves on.
- * Use it for information the user must read before deciding (e.g. a reduced
- * amount). Unlike Toast, it never auto-dismisses.
+ * Use it for information the user must read before deciding (e.g. a missed
+ * repayment). Unlike Toast, it never auto-dismisses.
  *
  * Tones: info (brand tint) | attention (amber tint)
- * There is deliberately no "danger" tone: a reduced or declined advance is
+ * There is deliberately no "danger" tone: a missed repayment or a decline is
  * not an error the user made.
  */
 import Icon from "./Icon.jsx";

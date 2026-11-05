@@ -104,17 +104,11 @@ export const SCENARIOS = [
 export const ADVANCE_AMOUNT_FOR_REPAY_SCENARIOS = 10000;
 
 /**
- * Amount actually sent after the final check.
- * Risk checks run BEFORE amounts are shown (ASSUMPTION), so the offered tiers
- * are real and a reduction ("haircut") should be rare. If it does happen
- * (something changed between offer and accept), we drop to the next tier down
- * and the user decides again on AmountChangedScreen.
+ * No "haircut" path: risk checks run BEFORE amounts are shown, and the amount
+ * shown is honoured for 24 hours (ASSUMPTION). NovaPay carries the small risk
+ * of something changing in that window, not the borrower.
  */
-export function disbursedFor(requested, haircut = false) {
-  if (!haircut || requested == null) return requested;
-  const lower = TIERS.filter((t) => t < requested);
-  return lower.length ? lower[lower.length - 1] : requested;
-}
+export const OFFER_HONOURED_HOURS = 24;
 
 /**
  * What unlocks a higher limit. ASSUMPTION: real criteria need Risk sign-off.

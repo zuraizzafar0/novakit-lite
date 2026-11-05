@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button, Card, Icon, ListRow, Notice, Timeline } from "../novakit";
-import { Screen, OutcomeIcon } from "./layout.jsx";
+import { Screen, OutcomeIcon, Checklist } from "./layout.jsx";
 import { CHECKLIST, fmt, repayFor, REPAYMENT_DATE, RETRY_DATE } from "./data.js";
 
 /**
@@ -110,27 +110,13 @@ export function DeclinedScreen({ reason, onHome, onUploadPayslip }) {
       </div>
 
       {checklist ? (
-        <Card className="py-1">
-          <div className="text-caption text-neutral-600 pt-3">What we checked</div>
-          {checklist.map((item) => (
-            <ListRow
-              key={item.label}
-              wrap
-              title={item.label}
-              subtitle={item.ok ? null : canAct ? "A recent payslip can confirm this" : "Not met this time"}
-              trailing={
-                <span
-                  className={`h-6 w-6 rounded-full flex items-center justify-center text-caption font-bold ${
-                    item.ok ? "bg-success text-white" : "border-2 border-neutral-500 text-neutral-700"
-                  }`}
-                >
-                  <Icon name={item.ok ? "check" : "x"} size={14} />
-                  <span className="sr-only">{item.ok ? "Met" : "Not met"}</span>
-                </span>
-              }
-            />
-          ))}
-        </Card>
+        <Checklist
+          title="What we checked"
+          items={checklist.map((item) => ({
+            ...item,
+            hint: canAct ? "A recent payslip can confirm this" : "Not met this time",
+          }))}
+        />
       ) : null}
 
       <Card className="space-y-1">

@@ -52,16 +52,8 @@ export const SCENARIOS = [
     id: "approved",
     group: "Applying",
     label: "Approved",
-    description: "Limit Rs 10,000. Rs 15,000 is locked, so over-limit can't happen.",
+    description: "Limit Rs 10,000. Rs 15,000 is locked, with what would unlock it.",
     limit: 10000,
-  },
-  {
-    id: "haircut",
-    group: "Applying",
-    label: "Approved, amount reduced",
-    description: "Limit Rs 15,000. Choose Rs 15,000: final checks reduce it to Rs 10,000.",
-    limit: 15000,
-    haircutCap: 10000,
   },
   {
     id: "income_unverified",
@@ -111,7 +103,25 @@ export const SCENARIOS = [
 
 export const ADVANCE_AMOUNT_FOR_REPAY_SCENARIOS = 10000;
 
-/** Amount actually sent after final risk checks (the "haircut"). */
-export function disbursedFor(scenario, requested) {
-  return scenario.haircutCap ? Math.min(requested, scenario.haircutCap) : requested;
+/**
+ * Amount actually sent after the final check.
+ * Risk checks run BEFORE amounts are shown (ASSUMPTION), so the offered tiers
+ * are real and a reduction ("haircut") should be rare. If it does happen
+ * (something changed between offer and accept), we drop to the next tier down
+ * and the user decides again on AmountChangedScreen.
+ */
+export function disbursedFor(requested, haircut = false) {
+  if (!haircut || requested == null) return requested;
+  const lower = TIERS.filter((t) => t < requested);
+  return lower.length ? lower[lower.length - 1] : requested;
 }
+
+/**
+ * What unlocks a higher limit. ASSUMPTION: real criteria need Risk sign-off.
+ * Shown as plain facts, never as a "boost" (benchmark: Cleo, what not to do).
+ */
+export const UNLOCK_CHECKLIST = [
+  { label: "Regular salary confirmed", ok: true },
+  { label: "Repay your first advance on time", ok: false, hint: "Limits are reviewed after each on-time repayment" },
+  { label: "3 months of salary paid into NovaPay", ok: false, hint: "You have 1 month so far" },
+];

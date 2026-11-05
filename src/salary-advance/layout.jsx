@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { AppBar, Button, Icon } from "../novakit";
+import { AppBar, Button, Card, Icon, ListRow } from "../novakit";
 
 /**
  * Screen layout for the prototype: app bar, scrolling content, pinned actions.
@@ -128,5 +128,36 @@ export function ProblemScreen({ title, heading, facts, retryLabel = "Try again",
         ))}
       </ul>
     </Screen>
+  );
+}
+
+/**
+ * A ✓/× list of criteria (benchmark: X "Check back later"). Used for what a
+ * decline checked and for what unlocks a higher limit. Factual on purpose:
+ * no progress bars or "boost" language that would gamify borrowing more.
+ */
+export function Checklist({ title, items }) {
+  return (
+    <Card className="py-1">
+      <div className="text-body font-semibold text-neutral-900 pt-3">{title}</div>
+      {items.map((item) => (
+        <ListRow
+          key={item.label}
+          wrap
+          title={item.label}
+          subtitle={item.ok ? null : item.hint}
+          trailing={
+            <span
+              className={`h-6 w-6 rounded-full flex items-center justify-center ${
+                item.ok ? "bg-success text-white" : "border-2 border-neutral-500 text-neutral-700"
+              }`}
+            >
+              <Icon name={item.ok ? "check" : "x"} size={14} />
+              <span className="sr-only">{item.ok ? "Done" : "Not yet"}</span>
+            </span>
+          }
+        />
+      ))}
+    </Card>
   );
 }

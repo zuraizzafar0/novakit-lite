@@ -44,6 +44,7 @@ export default function ScenarioSwitcher({ scenarios, value, onChange, onReset, 
         {[
           ["check", "Eligibility check fails once", "Shows a technical error that's clearly not a decline."],
           ["send", "Sending fails once after Accept", "Shows that nothing was sent or charged."],
+          ["haircut", "Final check lowers the amount (rare)", "Shows the fallback: the user sees what changed and decides again."],
         ].map(([key, label, hint]) => (
           <label key={key} className="flex gap-2 rounded-md border border-neutral-200 p-2 cursor-pointer">
             <input

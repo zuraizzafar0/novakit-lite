@@ -42,17 +42,16 @@ Use the **Prototype scenario** panel next to the phone to simulate what NovaPay'
 
 | Scenario | What to look at |
 |---|---|
-| Approved | Limit Rs 10,000. Rs 15,000 is locked and says why, so an over-limit request can't happen. Go through Accept to see the done screen and the updated home. |
-| Approved, amount reduced | Choose **Rs 15,000**. Final checks reduce it to Rs 10,000. A dedicated **"Your amount has changed"** step shows asked vs. can-send side by side (amount, fee, total) and offers three equal choices: continue, choose a different amount, or don't take an advance. Only then does the user see the terms and Accept. |
+| Approved | Limit Rs 10,000. Rs 15,000 is **locked**, with a factual "How to unlock" checklist. Only amounts we can actually give are selectable, so over-limit and bait-and-switch reductions are designed out. Go through Accept to see the done screen and the updated home. |
 | Declined: income not verified | Real reason plus a next step (upload a payslip). Home then shows "we need to confirm your salary". |
 | Declined: credit history | Reason given, plus a date to check again. |
 | Declined: other | The hard case: no specific reason can be shared, but there's still a date, a reminder and a way to ask for human review. |
 | Reminder: due in 3 days / due today | The reminder notification copy, and a calm repayment card with the amount and date first and no alarm styling. |
 | Late: payment didn't go through | Amber, not red. One sentence on what happened, no late fee, and two ways forward: pay an amount you choose (each suggestion shows what it leaves in your wallet), or move the date once for free. |
 
-**Something goes wrong:** two checkboxes in the panel make the eligibility check, or the send after Accept, fail once. The error screens say the problem is ours, that it isn't a decision about the user, and exactly what did and didn't happen to their money.
+**Something goes wrong:** checkboxes in the panel make the eligibility check, or the send after Accept, fail once. The error screens say the problem is ours, that it isn't a decision about the user, and exactly what did and didn't happen to their money. A third checkbox triggers the rare **reduced amount** fallback, for when something changes between offer and Accept. A dedicated "Your amount has changed" step shows asked vs. can-send side by side and offers continue, choose a different amount, or don't take an advance.
 
-**Deep links:** add `?scenario=<id>&screen=<screen>` to the URL, for example `?scenario=haircut&screen=review`, `?scenario=other&screen=declined` or `?scenario=late&screen=repayment`.
+**Deep links:** add `?scenario=<id>&screen=<screen>` to the URL, for example `?scenario=approved&screen=amount_changed`, `?scenario=other&screen=declined` or `?scenario=late&screen=repayment`.
 
 ---
 

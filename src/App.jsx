@@ -57,33 +57,32 @@ function initialState(scenario) {
 const CHECK_STEPS = ["Your NovaPay account", "Your salary deposits", "Working out your limit"];
 const FINAL_STEPS = ["Confirming your payday", "Final check on the amount"];
 
-// Deep links for reviewers, e.g. ?scenario=late&screen=repayment or ?scenario=haircut&screen=review
+// Deep links for reviewers, e.g. ?scenario=late&screen=repayment
+// or ?scenario=approved&fail=haircut&screen=amount_changed
 const DEEP_LINK_SCREENS = ["home", "offer", "review", "declined", "repayment", "pay_amount", "amount_changed", "checking", "check_failed", "send_failed"];
 function fromUrl() {
   const q = new URLSearchParams(window.location.search);
   const scenario = SCENARIOS.find((x) => x.id === q.get("scenario")) || SCENARIOS[0];
+  const fails = (q.get("fail") || "").split(",");
+  const problems = { check: fails.includes("check"), send: fails.includes("send"), haircut: fails.includes("haircut") };
   const state = initialState(scenario);
   const screen = q.get("screen");
+  const applying = !scenario.decline && !scenario.repayment;
   if (DEEP_LINK_SCREENS.includes(screen)) {
-    if (screen === "review" && !scenario.decline && !scenario.repayment) {
-      state.requested = scenario.haircutCap ? 15000 : scenario.limit;
-      state.screen = "review";
+    if (["review", "send_failed", "offer"].includes(screen) && applying) {
+      state.requested = screen === "offer" ? null : scenario.limit;
+      state.screen = screen;
+    } else if (screen === "amount_changed" && applying) {
+      problems.haircut = true;
+      state.requested = scenario.limit;
+      state.screen = "amount_changed";
     } else if (screen === "declined" && scenario.decline) state.screen = "declined";
     else if (screen === "repayment" && scenario.repayment) state.screen = "repayment";
-    else if (screen === "amount_changed" && scenario.haircutCap) {
-      state.requested = 15000;
-      state.screen = "amount_changed";
-    }
     else if (["checking", "check_failed"].includes(screen) && !scenario.repayment) state.screen = screen;
-    else if (screen === "send_failed" && !scenario.decline && !scenario.repayment) {
-      state.requested = scenario.haircutCap ? 15000 : scenario.limit;
-      state.screen = "send_failed";
-    }
     else if (screen === "pay_amount" && scenario.repayment?.state === "late") state.screen = "pay_amount";
-    else if (screen === "offer" && !scenario.decline && !scenario.repayment) state.screen = "offer";
     state.push = state.push && state.screen === "home";
   }
-  return { scenarioId: scenario.id, state };
+  return { scenarioId: scenario.id, state, problems };
 }
 
 export default function App() {
@@ -91,8 +90,9 @@ export default function App() {
   const [scenarioId, setScenarioId] = useState(initial.scenarioId);
   const scenario = SCENARIOS.find((s) => s.id === scenarioId);
   const [s, setS] = useState(initial.state);
-  // Prototype-only: make the next check or send fail once, to show error states.
-  const [problems, setProblems] = useState({ check: false, send: false });
+  // Prototype-only: make the next check or send fail once, or the final check
+  // lower the amount, to show error and edge states.
+  const [problems, setProblems] = useState(initial.problems);
   const [failed, setFailed] = useState({ check: false, send: false });
   const set = (patch) => setS((prev) => ({ ...prev, ...patch }));
   const go = (screen) => set({ screen, push: false });
@@ -111,7 +111,7 @@ export default function App() {
         setFailed((f) => ({ ...f, check: true }));
         set({ screen: "check_failed" });
       } else if (s.screen === "checking") set({ screen: scenario.decline ? "declined" : "offer" });
-      else set({ screen: disbursedFor(scenario, s.requested) < s.requested ? "amount_changed" : "review" });
+      else set({ screen: disbursedFor(s.requested, problems.haircut) < s.requested ? "amount_changed" : "review" });
     }, 1800);
     return () => clearTimeout(t);
   }, [s.screen, scenario, problems, failed]);
@@ -169,8 +169,8 @@ export default function App() {
       view = (
         <ReviewScreen
           requested={s.requested}
-          disbursed={disbursedFor(scenario, s.requested)}
-          onBack={() => go(disbursedFor(scenario, s.requested) < s.requested ? "amount_changed" : "offer")}
+          disbursed={disbursedFor(s.requested, problems.haircut)}
+          onBack={() => go(disbursedFor(s.requested, problems.haircut) < s.requested ? "amount_changed" : "offer")}
           onDecline={home}
           onAccept={() => {
             if (problems.send && !failed.send) {
@@ -178,7 +178,7 @@ export default function App() {
               set({ screen: "send_failed" });
               return;
             }
-            const amount = disbursedFor(scenario, s.requested);
+            const amount = disbursedFor(s.requested, problems.haircut);
             set({
               advance: { amount },
               repay: { ...s.repay, state: "active", wallet: s.repay.wallet + amount },
@@ -192,7 +192,7 @@ export default function App() {
       view = (
         <AmountChangedScreen
           requested={s.requested}
-          disbursed={disbursedFor(scenario, s.requested)}
+          disbursed={disbursedFor(s.requested, problems.haircut)}
           onContinue={() => go("review")}
           onChangeAmount={() => set({ requested: null, screen: "offer" })}
           onCancel={home}
@@ -224,9 +224,9 @@ export default function App() {
             "Nothing was charged, and you don't owe anything",
             "Your offer and terms are unchanged",
           ]}
-          retryLabel={`Try again: get Rs ${fmt(disbursedFor(scenario, s.requested || 0))}`}
+          retryLabel={`Try again: get Rs ${fmt(disbursedFor(s.requested || 0, problems.haircut))}`}
           onRetry={() => {
-            const amount = disbursedFor(scenario, s.requested);
+            const amount = disbursedFor(s.requested, problems.haircut);
             set({
               advance: { amount },
               repay: { ...s.repay, state: "active", wallet: s.repay.wallet + amount },

@@ -42,7 +42,7 @@ Use the **Prototype scenario** panel next to the phone to simulate what NovaPay'
 
 | Scenario | What to look at |
 |---|---|
-| Approved | Limit Rs 10,000. Rs 15,000 is **locked**, with a factual "How to unlock" checklist. Only amounts we can actually give are selectable, so over-limit and bait-and-switch reductions are designed out. Go through Accept to see the done screen and the updated home. |
+| Approved | Limit Rs 10,000. Rs 15,000 is **locked**. A "How to unlock" link expands a factual checklist on request, so it isn't pushed at the moment of choosing. Only amounts we can actually give are selectable, so over-limit and bait-and-switch reductions are designed out. Go through Accept to see the done screen and the updated home. |
 | Declined: income not verified | Real reason plus a next step (upload a payslip). Home then shows "we need to confirm your salary". |
 | Declined: credit history | Reason given, plus a date to check again. |
 | Declined: other | The hard case: no specific reason can be shared, but there's still a date, a reminder and a way to ask for human review. |

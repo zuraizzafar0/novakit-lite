@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { AmountOption, Button, Card } from "../novakit";
+import { AmountOption, Button, Card, Icon } from "../novakit";
 import { Screen, Checklist } from "./layout.jsx";
 import { TIERS, UNLOCK_CHECKLIST, feeFor, fmt, repayFor, REPAYMENT_DATE } from "./data.js";
 
@@ -16,6 +16,8 @@ import { TIERS, UNLOCK_CHECKLIST, feeFor, fmt, repayFor, REPAYMENT_DATE } from "
  */
 export default function OfferScreen({ limit, initialAmount = null, onBack, onContinue }) {
   const [selected, setSelected] = useState(initialAmount);
+  const [showUnlock, setShowUnlock] = useState(false);
+  const top = Math.max(...TIERS);
 
   return (
     <Screen
@@ -48,8 +50,30 @@ export default function OfferScreen({ limit, initialAmount = null, onBack, onCon
         ))}
       </div>
 
-      {TIERS.some((t) => t > limit) ? (
-        <Checklist title={`How to unlock Rs ${fmt(Math.max(...TIERS))}`} items={UNLOCK_CHECKLIST} />
+      {/* Secondary info, available on request rather than pushed: shown up front it
+          nudges toward borrowing more. Expand-in-place, not a tooltip (no hover on phones). */}
+      {top > limit ? (
+        <div className="-mt-1 space-y-2">
+          <button
+            type="button"
+            aria-expanded={showUnlock}
+            aria-controls="unlock-info"
+            onClick={() => setShowUnlock((v) => !v)}
+            className="inline-flex items-center gap-1 text-body font-semibold text-brand rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+          >
+            How to unlock Rs {fmt(top)}
+            <Icon
+              name="chevron-down"
+              size={18}
+              className={`motion-safe:transition-transform ${showUnlock ? "rotate-180" : ""}`}
+            />
+          </button>
+          {showUnlock ? (
+            <div id="unlock-info" className="motion-safe:animate-enter">
+              <Checklist title="What raises your limit" items={UNLOCK_CHECKLIST} />
+            </div>
+          ) : null}
+        </div>
       ) : null}
 
       <Card className="space-y-2">

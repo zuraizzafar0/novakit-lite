@@ -53,7 +53,7 @@ Use the **Prototype scenario** panel next to the phone to simulate what NovaPay'
 
 **Something goes wrong:** checkboxes in the panel make the eligibility check, or the send after Accept, fail once. The error screens say the problem is ours, that it isn't a decision about the user, and exactly what did and didn't happen to their money.
 
-**Deep links:** add `?scenario=<id>&screen=<screen>` to the URL, for example `?scenario=approved&screen=review`, `?scenario=other&screen=declined` or `?scenario=late&screen=repayment`, `?scenario=pre_default&screen=repayment` or `?scenario=missed_new_date&screen=talk_to_us`.
+**Deep links:** add `?scenario=<id>&screen=<screen>` to the URL, for example `?scenario=approved&screen=review`, `?scenario=other&screen=declined`, `?scenario=late&screen=repayment`, `?scenario=pre_default&screen=repayment` or `?scenario=missed_new_date&screen=talk_to_us`.
 
 ---
 

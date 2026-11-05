@@ -136,6 +136,24 @@ export function DeclinedScreen({ reason, onHome, onUploadPayslip }) {
 
       {/* income_unverified is fixable by the user, so the document IS the review:
           no support ticket. Human review is for declines the user can't act on. */}
+      {/* Self-serve first. Support only appears when we can't disclose the
+          reason ("other"), because then a person is the only path. */}
+      {reason === "credit_score" ? (
+        <Card className="space-y-3">
+          <div className="text-body font-semibold text-neutral-900">What helps your credit history</div>
+          <ul className="text-body text-neutral-700 space-y-1 list-disc pl-5">
+            <li>Pay bills and loan instalments on time</li>
+            <li>Clear any overdue amounts first</li>
+            <li>Avoid applying for lots of credit at once</li>
+          </ul>
+          <div className="border-t border-neutral-200 pt-3">
+            <div className="text-body font-semibold text-neutral-900">Think your credit report is wrong?</div>
+            <p className="text-body text-neutral-700">
+              Check it with a credit bureau and ask them to correct any mistakes. Then check again here.
+            </p>
+          </div>
+        </Card>
+      ) : (
       <Card className="py-1">
         <div className="text-body font-semibold text-neutral-900 pt-3">
           {canAct ? "No payslip?" : "What you can do"}
@@ -158,6 +176,7 @@ export function DeclinedScreen({ reason, onHome, onUploadPayslip }) {
           />
         )}
       </Card>
+      )}
 
       <FactList facts={["Your NovaPay wallet works as usual", "Nothing has been charged"]} />
     </Screen>

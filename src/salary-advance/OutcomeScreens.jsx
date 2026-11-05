@@ -21,7 +21,6 @@ export function DoneScreen({ amount, onHome }) {
       <div className="flex flex-col items-center text-center gap-3 pt-4">
         <OutcomeIcon tone="success" name="check" />
         <h2 className="text-title text-neutral-900">Rs {fmt(amount)} is in your wallet</h2>
-        <p className="text-body text-neutral-700">You can use it straight away.</p>
       </div>
 
       <Card>
@@ -58,15 +57,12 @@ export function DoneScreen({ amount, onHome }) {
 const DECLINE_COPY = {
   income_unverified: {
     title: "We couldn't confirm your salary yet",
-    body: "To offer an advance, we need to see a regular salary. We couldn't confirm that from your NovaPay account.",
   },
   credit_score: {
     title: "We can't offer an advance right now",
-    body: "This decision is based on your credit history. It isn't permanent: things like paying bills and loans on time can change it.",
   },
   other: {
     title: "We can't offer an advance right now",
-    body: "Our checks didn't approve an advance this time. We're not able to share the specific reason, and we know that's frustrating.",
   },
 };
 
@@ -111,7 +107,6 @@ export function DeclinedScreen({ reason, onHome, onUploadPayslip }) {
       <div className="space-y-2 pt-2">
         <OutcomeIcon tone="neutral" name="info" />
         <h2 className="text-title text-neutral-900">{copy.title}</h2>
-        <p className="text-body text-neutral-700">{copy.body}</p>
       </div>
 
       {checklist ? (
@@ -143,7 +138,7 @@ export function DeclinedScreen({ reason, onHome, onUploadPayslip }) {
         <p className="text-body text-neutral-700">
           {canAct
             ? "Upload a recent payslip and we'll check again. It usually takes 1 working day."
-            : `You can check again from ${RETRY_DATE}. If you think we've got this wrong, ask for a person to review it from Help in the app.`}
+            : `${reason === "other" ? "We can't share the specific reason. " : ""}You can check again from ${RETRY_DATE}. If you think we've got this wrong, ask for a person to review it from Help in the app.`}
         </p>
       </Card>
 
@@ -169,9 +164,6 @@ export function PayslipSentScreen({ onHome }) {
       <div className="flex flex-col items-center text-center gap-3 pt-6">
         <OutcomeIcon tone="brand" name="check" />
         <h2 className="text-title text-neutral-900">Thanks, we've got your payslip</h2>
-        <p className="text-body text-neutral-700">
-          We'll check it within 1 working day and tell you in the app whether you can get an advance.
-        </p>
       </div>
     </Screen>
   );

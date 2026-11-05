@@ -45,10 +45,6 @@ export default function AmountChangedScreen({ requested, disbursed, onContinue, 
         <h2 className="text-title text-neutral-900">
           We can send Rs {fmt(disbursed)}, not the Rs {fmt(requested)} you asked for
         </h2>
-        <p className="text-body text-neutral-700 mt-2">
-          Our final checks look at your recent account activity, and they approved a lower amount this time.
-          Nothing has been sent or charged.
-        </p>
       </div>
 
       <Card className="py-2">

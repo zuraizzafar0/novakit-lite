@@ -91,7 +91,7 @@ export function OutcomeIcon({ tone = "neutral", name }) {
  * it says the problem is ours, that it isn't a decision about the user, and
  * exactly what did and didn't happen to their money.
  */
-export function ProblemScreen({ title, heading, body, facts, retryLabel = "Try again", onRetry, onHome }) {
+export function ProblemScreen({ title, heading, facts, retryLabel = "Try again", onRetry, onHome }) {
   const [retrying, setRetrying] = useState(false);
   return (
     <Screen
@@ -118,7 +118,6 @@ export function ProblemScreen({ title, heading, body, facts, retryLabel = "Try a
       <div className="space-y-2 pt-2">
         <OutcomeIcon tone="neutral" name="alert" />
         <h2 className="text-title text-neutral-900">{heading}</h2>
-        <p className="text-body text-neutral-700">{body}</p>
       </div>
       <ul className="rounded-md bg-neutral-50 border border-neutral-200 p-3 space-y-2">
         {facts.map((f) => (

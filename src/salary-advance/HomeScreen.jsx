@@ -143,10 +143,6 @@ function AdvanceCard({ advance, repay, status, onSeeOffer, onUploadPayslip, onOp
     <Card className="space-y-3">
       <div>
         <div className="text-title text-neutral-900">Need cash before payday?</div>
-        <div className="text-body text-neutral-700 mt-1">
-          A salary advance of Rs 5,000 to 15,000, repaid on your next payday. One fee of 3% (Rs 150 to 450).
-          No interest.
-        </div>
       </div>
       <Button size="lg" onClick={onSeeOffer}>
         Check what I can get

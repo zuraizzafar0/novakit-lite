@@ -126,10 +126,9 @@ export default function App() {
       doneMessage:
         left > 0
           ? {
-              title: `You paid Rs ${fmt(amount)}`,
-              body: `Rs ${fmt(left)} is left, with nothing extra added. You can pay more any time, or choose a new date.`,
+              title: `You paid Rs ${fmt(amount)}. Rs ${fmt(left)} is left, with nothing added.`,
             }
-          : { title: "Your advance is fully repaid", body: "Thank you. There's nothing more to pay." },
+          : { title: "Your advance is fully repaid. Thank you." },
       screen: "repayment_done",
     });
   }
@@ -205,8 +204,11 @@ export default function App() {
         <ProblemScreen
           title="Salary advance"
           heading="We couldn't finish checking"
-          body="Something went wrong on our side. This isn't a decision about you, and you can try again now."
-          facts={["Nothing has changed on your account", "This doesn't count as a declined application"]}
+          facts={[
+            "This is a problem on our side, not a decision about you",
+            "Nothing has changed on your account",
+            "It doesn't count as a declined application",
+          ]}
           onRetry={() => go("checking")}
           onHome={home}
         />
@@ -217,7 +219,6 @@ export default function App() {
         <ProblemScreen
           title="Salary advance"
           heading="We couldn't send your advance"
-          body="Something went wrong on our side while sending. We've checked, and no money moved."
           facts={[
             "Nothing was sent to your wallet",
             "Nothing was charged, and you don't owe anything",
@@ -284,8 +285,7 @@ export default function App() {
             set({
               repay: { ...s.repay, newDate: date, usedDateChange: true },
               doneMessage: {
-                title: `Your new date is ${date}`,
-                body: `We'll take Rs ${fmt(owed)} from your wallet on ${date} and remind you 3 days before. There's no extra cost.`,
+                title: `Your new date is ${date}. No extra cost.`,
               },
               screen: "repayment_done",
             })

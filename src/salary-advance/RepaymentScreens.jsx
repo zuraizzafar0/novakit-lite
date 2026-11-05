@@ -210,10 +210,6 @@ export function PayAmountScreen({ owed, wallet, onBack, onConfirm }) {
     >
       <div>
         <h2 className="text-title text-neutral-900">How much do you want to pay now?</h2>
-        <p className="text-body text-neutral-700 mt-1">
-          Any amount helps, and nothing extra is added to what's left. Keep enough for what you need this
-          week. Your wallet has Rs {fmt(wallet)}.
-        </p>
       </div>
 
       <div role="radiogroup" aria-label="Amount to pay" className="space-y-2">
@@ -270,9 +266,6 @@ export function NewDateScreen({ owed, onBack, onConfirm }) {
     >
       <div>
         <h2 className="text-title text-neutral-900">When can you repay Rs {fmt(owed)}?</h2>
-        <p className="text-body text-neutral-700 mt-1">
-          Moving the date is free, and the amount stays the same. You can do this once.
-        </p>
       </div>
       <fieldset className="space-y-2">
         <legend className="sr-only">New repayment date</legend>
@@ -289,7 +282,8 @@ export function NewDateScreen({ owed, onBack, onConfirm }) {
         ))}
       </fieldset>
       <p className="text-caption text-neutral-600">
-        We'll take it from your wallet on that date and remind you 3 days before. If money arrives sooner,
+        Free, and the amount stays the same. You can do this once. We'll take it from your wallet on that date
+        and remind you 3 days before. If money arrives sooner,
         you can repay earlier.
       </p>
     </Screen>
@@ -297,7 +291,7 @@ export function NewDateScreen({ owed, onBack, onConfirm }) {
 }
 
 /** Confirmation after a payment or a date change. Calm, factual, no celebration of debt. */
-export function RepaymentDoneScreen({ title, body, onHome }) {
+export function RepaymentDoneScreen({ title, onHome }) {
   return (
     <Screen
       title="Salary advance"
@@ -310,7 +304,6 @@ export function RepaymentDoneScreen({ title, body, onHome }) {
       <div className="flex flex-col items-center text-center gap-3 pt-6">
         <OutcomeIcon tone="brand" name="check" />
         <h2 className="text-title text-neutral-900">{title}</h2>
-        <p className="text-body text-neutral-700">{body}</p>
       </div>
     </Screen>
   );

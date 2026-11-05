@@ -33,10 +33,6 @@ export default function OfferScreen({ limit, initialAmount = null, onBack, onCon
     >
       <div>
         <h2 className="text-title text-neutral-900">How much do you need?</h2>
-        <p className="text-body text-neutral-700 mt-1">
-          You can ask for up to Rs {fmt(limit)}. You pay it back in one go on your next payday,{" "}
-          <span className="font-semibold text-neutral-900">{REPAYMENT_DATE.short}</span>.
-        </p>
         <p className="text-caption text-neutral-600 mt-2">
           We run one last check after you choose. If it lowers the amount, we'll show you what changes and
           you can decide again. Nothing is sent until you accept.

@@ -19,7 +19,7 @@ npm run preview    # serve the production build locally
 
 The app renders inside a ~390px mobile frame. Open it on desktop, or use your browser's device toolbar for a real phone viewport.
 
-**Live link:** _TBD_
+**Live link:** https://novakit-lite-liard.vercel.app/
 
 ---
 

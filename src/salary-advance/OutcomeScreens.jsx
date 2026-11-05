@@ -146,11 +146,23 @@ export function DeclinedScreen({ reason, onHome, onUploadPayslip }) {
             <li>Clear any overdue amounts first</li>
             <li>Avoid applying for lots of credit at once</li>
           </ul>
-          <div className="border-t border-neutral-200 pt-3">
-            <div className="text-body font-semibold text-neutral-900">Think your credit report is wrong?</div>
-            <p className="text-body text-neutral-700">
-              Check it with a credit bureau and ask them to correct any mistakes. Then check again here.
-            </p>
+          {/* NovaPay keeps these records, so only NovaPay can correct them. A quiet
+              link, not a promoted action: rarely needed, but never missing. */}
+          <div className="border-t border-neutral-200 pt-3" aria-live="polite">
+            {review ? (
+              <p className="flex gap-2 text-caption text-neutral-900">
+                <Icon name="check" size={16} className="mt-0.5 text-success" />
+                We'll check your record and reply in the app within 2 working days.
+              </p>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setReview(true)}
+                className="text-left text-caption text-neutral-700 underline underline-offset-2 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+              >
+                Think our record is wrong? Ask us to check it
+              </button>
+            )}
           </div>
         </Card>
       ) : (

@@ -122,7 +122,7 @@ export function DeclinedScreen({ reason, onHome, onUploadPayslip }) {
           title="Why: what we checked"
           items={checklist.map((item) => ({
             ...item,
-            hint: canAct ? "A recent payslip can confirm this" : "Not met this time",
+            hint: canAct ? "A payslip or bank statement can confirm this" : "Not met this time",
           }))}
         />
       ) : (
@@ -134,16 +134,29 @@ export function DeclinedScreen({ reason, onHome, onUploadPayslip }) {
         </Card>
       )}
 
+      {/* income_unverified is fixable by the user, so the document IS the review:
+          no support ticket. Human review is for declines the user can't act on. */}
       <Card className="py-1">
-        <div className="text-body font-semibold text-neutral-900 pt-3">What you can do</div>
-        <ActionRow
-          icon="person"
-          title="Ask a person to review this"
-          detail="Our checks decided this automatically. A person can take a second look."
-          done={review}
-          doneText="Review requested. We'll reply in the app within 2 working days."
-          onClick={() => setReview(true)}
-        />
+        <div className="text-body font-semibold text-neutral-900 pt-3">
+          {canAct ? "No payslip?" : "What you can do"}
+        </div>
+        {canAct ? (
+          <ActionRow
+            icon="arrow-up"
+            title="Use a bank statement instead"
+            detail="Your last 3 months, showing your salary coming in"
+            onClick={onUploadPayslip}
+          />
+        ) : (
+          <ActionRow
+            icon="person"
+            title="Ask a person to review this"
+            detail="Our checks decided this automatically. A person can take a second look."
+            done={review}
+            doneText="Review requested. We'll reply in the app within 2 working days."
+            onClick={() => setReview(true)}
+          />
+        )}
       </Card>
 
       <FactList facts={["Your NovaPay wallet works as usual", "Nothing has been charged"]} />
@@ -155,7 +168,7 @@ export function DeclinedScreen({ reason, onHome, onUploadPayslip }) {
 export function PayslipSentScreen({ onHome }) {
   return (
     <Screen
-      title="Payslip received"
+      title="Document received"
       footer={
         <Button size="lg" onClick={onHome}>
           Back to home
@@ -164,7 +177,7 @@ export function PayslipSentScreen({ onHome }) {
     >
       <div className="flex flex-col items-center text-center gap-3 pt-6">
         <OutcomeIcon tone="brand" name="check" />
-        <h2 className="text-title text-neutral-900">Thanks, we've got your payslip</h2>
+        <h2 className="text-title text-neutral-900">Thanks, we've got your document</h2>
       </div>
     </Screen>
   );

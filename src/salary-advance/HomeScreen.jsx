@@ -106,7 +106,7 @@ function AdvanceCard({ advance, repay, status, onSeeOffer, onUploadPayslip, onOp
     return (
       <Card className="space-y-1">
         <div className="text-caption text-neutral-600">Salary advance</div>
-        <p className="text-body text-neutral-900">We're checking your payslip.</p>
+        <p className="text-body text-neutral-900">We're checking your document.</p>
         <p className="text-caption text-neutral-600">We'll let you know within 1 working day.</p>
       </Card>
     );
@@ -118,7 +118,7 @@ function AdvanceCard({ advance, repay, status, onSeeOffer, onUploadPayslip, onOp
         <div className="space-y-1">
           <div className="text-caption text-neutral-600">Salary advance</div>
           <p className="text-body text-neutral-900">We need to confirm your salary first.</p>
-          <p className="text-caption text-neutral-600">Upload a recent payslip and we'll check again.</p>
+          <p className="text-caption text-neutral-600">Upload a payslip or bank statement and we'll check again.</p>
         </div>
         <Button variant="secondary" onClick={onUploadPayslip}>
           Upload a payslip

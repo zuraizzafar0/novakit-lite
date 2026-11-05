@@ -96,8 +96,6 @@ Every token or component that was added or modified, with a one-line rationale.
 
 Anything in NovaKit Lite that is wrong, inconsistent, or missing, and what was done about it. See [AUDIT.md](AUDIT.md).
 
-**Component sheet:** every added or changed component in every variant and state, at [`?gallery`](https://novakit-lite-liard.vercel.app/?gallery), labelled in Figma variant syntax.
-
 **Design ↔ code mapping:** [CODE_CONNECT.md](CODE_CONNECT.md) maps every added or changed component's props, variants and states to its Figma component, plus the token-to-variable table.
 
 ---

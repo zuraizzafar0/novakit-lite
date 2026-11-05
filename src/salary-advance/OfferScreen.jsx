@@ -13,7 +13,7 @@ import { TIERS, feeFor, fmt, repayFor, REPAYMENT_DATE } from "./data.js";
  *   do: promising an amount a later check takes away).
  * - No countdowns, referral boosts or "limited time" framing (Cleo, what not to do).
  */
-export default function OfferScreen({ limit, mayReduce = false, initialAmount = null, onBack, onContinue }) {
+export default function OfferScreen({ limit, initialAmount = null, onBack, onContinue }) {
   const [selected, setSelected] = useState(initialAmount);
 
   return (
@@ -37,12 +37,10 @@ export default function OfferScreen({ limit, mayReduce = false, initialAmount = 
           You can ask for up to Rs {fmt(limit)}. You pay it back in one go on your next payday,{" "}
           <span className="font-semibold text-neutral-900">{REPAYMENT_DATE.short}</span>.
         </p>
-        {mayReduce ? (
-          <p className="text-caption text-neutral-600 mt-2">
-            We run one last check before you accept. If it changes the amount, we'll tell you before
-            anything is sent.
-          </p>
-        ) : null}
+        <p className="text-caption text-neutral-600 mt-2">
+          We run one last check after you choose. If it lowers the amount, we'll show you what changes and
+          you can decide again. Nothing is sent until you accept.
+        </p>
       </div>
 
       <div role="radiogroup" aria-label="Advance amount" className="space-y-2">

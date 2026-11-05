@@ -43,7 +43,7 @@ Use the **Prototype scenario** panel next to the phone to simulate what NovaPay'
 | Scenario | What to look at |
 |---|---|
 | Approved | Limit Rs 10,000. Rs 15,000 is locked and says why, so an over-limit request can't happen. Go through Accept to see the done screen and the updated home. |
-| Approved, amount reduced | Choose **Rs 15,000**. Final checks reduce it to Rs 10,000, and the review screen discloses this before Accept, with the fee recalculated. |
+| Approved, amount reduced | Choose **Rs 15,000**. Final checks reduce it to Rs 10,000. A dedicated **"Your amount has changed"** step shows asked vs. can-send side by side (amount, fee, total) and offers three equal choices: continue, choose a different amount, or don't take an advance. Only then does the user see the terms and Accept. |
 | Declined: income not verified | Real reason plus a next step (upload a payslip). Home then shows "we need to confirm your salary". |
 | Declined: credit history | Reason given, plus a date to check again. |
 | Declined: other | The hard case: no specific reason can be shared, but there's still a date, a reminder and a way to ask for human review. |

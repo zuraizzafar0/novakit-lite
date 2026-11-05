@@ -4,6 +4,7 @@ import PushPreview from "./prototype/PushPreview.jsx";
 import HomeScreen from "./salary-advance/HomeScreen.jsx";
 import OfferScreen from "./salary-advance/OfferScreen.jsx";
 import ReviewScreen from "./salary-advance/ReviewScreen.jsx";
+import AmountChangedScreen from "./salary-advance/AmountChangedScreen.jsx";
 import { DoneScreen, DeclinedScreen, PayslipSentScreen } from "./salary-advance/OutcomeScreens.jsx";
 import {
   RepaymentScreen,
@@ -54,7 +55,7 @@ function initialState(scenario) {
 }
 
 // Deep links for reviewers, e.g. ?scenario=late&screen=repayment or ?scenario=haircut&screen=review
-const DEEP_LINK_SCREENS = ["home", "offer", "review", "declined", "repayment", "pay_amount"];
+const DEEP_LINK_SCREENS = ["home", "offer", "review", "declined", "repayment", "pay_amount", "amount_changed"];
 function fromUrl() {
   const q = new URLSearchParams(window.location.search);
   const scenario = SCENARIOS.find((x) => x.id === q.get("scenario")) || SCENARIOS[0];
@@ -66,6 +67,10 @@ function fromUrl() {
       state.screen = "review";
     } else if (screen === "declined" && scenario.decline) state.screen = "declined";
     else if (screen === "repayment" && scenario.repayment) state.screen = "repayment";
+    else if (screen === "amount_changed" && scenario.haircutCap) {
+      state.requested = 15000;
+      state.screen = "amount_changed";
+    }
     else if (screen === "pay_amount" && scenario.repayment?.state === "late") state.screen = "pay_amount";
     else if (screen === "offer" && !scenario.decline && !scenario.repayment) state.screen = "offer";
     state.push = state.push && state.screen === "home";
@@ -91,7 +96,7 @@ export default function App() {
     if (s.screen !== "checking" && s.screen !== "final_checks") return;
     const t = setTimeout(() => {
       if (s.screen === "checking") set({ screen: scenario.decline ? "declined" : "offer" });
-      else set({ screen: "review" });
+      else set({ screen: disbursedFor(scenario, s.requested) < s.requested ? "amount_changed" : "review" });
     }, 1200);
     return () => clearTimeout(t);
   }, [s.screen, scenario]);
@@ -123,7 +128,6 @@ export default function App() {
       view = (
         <OfferScreen
           limit={scenario.limit}
-          mayReduce={Boolean(scenario.haircutCap)}
           initialAmount={s.requested}
           onBack={home}
           onContinue={(amount) => set({ requested: amount, screen: "final_checks" })}
@@ -138,8 +142,7 @@ export default function App() {
         <ReviewScreen
           requested={s.requested}
           disbursed={disbursedFor(scenario, s.requested)}
-          onBack={() => go("offer")}
-          onChangeAmount={() => set({ requested: null, screen: "offer" })}
+          onBack={() => go(disbursedFor(scenario, s.requested) < s.requested ? "amount_changed" : "offer")}
           onDecline={home}
           onAccept={() => {
             const amount = disbursedFor(scenario, s.requested);
@@ -149,6 +152,17 @@ export default function App() {
               screen: "done",
             });
           }}
+        />
+      );
+      break;
+    case "amount_changed":
+      view = (
+        <AmountChangedScreen
+          requested={s.requested}
+          disbursed={disbursedFor(scenario, s.requested)}
+          onContinue={() => go("review")}
+          onChangeAmount={() => set({ requested: null, screen: "offer" })}
+          onCancel={home}
         />
       );
       break;

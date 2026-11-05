@@ -15,9 +15,10 @@ import { feeFor, fmt, repayFor, REPAYMENT_DATE } from "./data.js";
  * - Afterpay (what not to do): no fee hidden behind an info icon, no
  *   consent checkbox above a wall of legal text.
  *
- * A haircut is disclosed here, before Accept, with the fee recalculated.
+ * A haircut gets its own decision step first (AmountChangedScreen); here we
+ * only remind the user that the amount was reduced.
  */
-export default function ReviewScreen({ requested, disbursed, onBack, onChangeAmount, onDecline, onAccept }) {
+export default function ReviewScreen({ requested, disbursed, onBack, onDecline, onAccept }) {
   const [sending, setSending] = useState(false);
   const reduced = disbursed < requested;
   const fee = feeFor(disbursed);
@@ -47,19 +48,8 @@ export default function ReviewScreen({ requested, disbursed, onBack, onChangeAmo
       }
     >
       {reduced ? (
-        <Notice tone="attention" title={`We can send Rs ${fmt(disbursed)}, not Rs ${fmt(requested)}`}>
-          <p>
-            After our final checks, Rs {fmt(disbursed)} is the most we can offer right now, based on your
-            recent account activity. Everything below is worked out on Rs {fmt(disbursed)}.
-          </p>
-          <button
-            type="button"
-            onClick={onChangeAmount}
-            disabled={sending}
-            className="mt-2 font-semibold text-brand underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand rounded-sm"
-          >
-            Choose a different amount
-          </button>
+        <Notice tone="info" title={`Reduced from Rs ${fmt(requested)} after final checks`}>
+          Everything below is worked out on Rs {fmt(disbursed)}.
         </Notice>
       ) : null}
 

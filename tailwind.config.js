@@ -41,6 +41,23 @@ export default {
         md: "12px",
         lg: "20px",
       },
+      // Motion: short and calm. Always applied with Tailwind's `motion-safe:`
+      // prefix, so users who ask for reduced motion get none.
+      keyframes: {
+        enter: {
+          from: { opacity: "0", transform: "translateY(8px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
+        },
+        pop: {
+          "0%": { opacity: "0", transform: "scale(0.6)" },
+          "70%": { opacity: "1", transform: "scale(1.06)" },
+          "100%": { transform: "scale(1)" },
+        },
+      },
+      animation: {
+        enter: "enter 220ms ease-out both",
+        pop: "pop 320ms ease-out both",
+      },
       boxShadow: {
         card: "0 1px 3px rgba(0, 0, 0, 0.08)",
       },

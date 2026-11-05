@@ -1,4 +1,4 @@
-import { AppBar, AmountText, Button, Card, ListRow, Notice } from "../novakit";
+import { AppBar, AmountText, Button, Card, Icon, ListRow, Notice } from "../novakit";
 import { fmt, repayFor, REPAYMENT_DATE, RETRY_DATE } from "./data.js";
 
 /**
@@ -30,14 +30,14 @@ export default function HomeScreen({ balance, advance, repay, status, onSeeOffer
         <Card>
           <div className="text-caption text-neutral-600 mb-1">Recent activity</div>
           {repay?.paid > 0 ? (
-            <ListRow icon="↑" title="Advance repayment" subtitle="Today" trailing={<AmountText amount={repay.paid} size="body" />} />
+            <ListRow icon={<Icon name="arrow-up" size={18} label="Money out" />} title="Advance repayment" subtitle="Today" trailing={<AmountText amount={repay.paid} size="body" />} />
           ) : null}
           {advance && repay?.state === "active" ? (
-            <ListRow icon="↓" title="Salary advance received" subtitle="Today" trailing={<AmountText amount={advance.amount} size="body" />} />
+            <ListRow icon={<Icon name="arrow-down" size={18} label="Money in" />} title="Salary advance received" subtitle="Today" trailing={<AmountText amount={advance.amount} size="body" />} />
           ) : null}
-          <ListRow icon="↑" title="Sent to Ahmed K." subtitle="Today, 2:14 PM" trailing={<AmountText amount={1500} size="body" />} />
-          <ListRow icon="↓" title="Salary credited" subtitle="28 Jun" trailing={<AmountText amount={68000} size="body" />} />
-          <ListRow icon="↑" title="Mobile top-up" subtitle="27 Jun" trailing={<AmountText amount={500} size="body" />} />
+          <ListRow icon={<Icon name="arrow-up" size={18} label="Money out" />} title="Sent to Ahmed K." subtitle="Today, 2:14 PM" trailing={<AmountText amount={1500} size="body" />} />
+          <ListRow icon={<Icon name="arrow-down" size={18} label="Money in" />} title="Salary credited" subtitle="28 Jun" trailing={<AmountText amount={68000} size="body" />} />
+          <ListRow icon={<Icon name="arrow-up" size={18} label="Money out" />} title="Mobile top-up" subtitle="27 Jun" trailing={<AmountText amount={500} size="body" />} />
         </Card>
       </main>
     </div>
@@ -50,9 +50,14 @@ function AdvanceCard({ advance, repay, status, onSeeOffer, onUploadPayslip, onOp
 
     if (owed <= 0) {
       return (
-        <Card className="space-y-1">
-          <div className="text-caption text-neutral-600">Salary advance</div>
-          <p className="text-body text-neutral-900">Fully repaid. Thank you.</p>
+        <Card className="flex items-center gap-3">
+          <span className="h-9 w-9 rounded-full bg-brand-50 text-brand flex items-center justify-center motion-safe:animate-pop">
+            <Icon name="check" size={20} />
+          </span>
+          <div>
+            <div className="text-body text-neutral-900">Salary advance fully repaid</div>
+            <div className="text-caption text-neutral-600">Thank you. There's nothing more to pay.</div>
+          </div>
         </Card>
       );
     }

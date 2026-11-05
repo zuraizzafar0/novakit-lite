@@ -50,6 +50,8 @@ Use the **Prototype scenario** panel next to the phone to simulate what NovaPay'
 | Reminder: due in 3 days / due today | The reminder notification copy, and a calm repayment card with the amount and date first and no alarm styling. |
 | Late: payment didn't go through | Amber, not red. One sentence on what happened, no late fee, and two ways forward: pay an amount you choose (each suggestion shows what it leaves in your wallet), or move the date once for free. |
 
+**Something goes wrong:** two checkboxes in the panel make the eligibility check, or the send after Accept, fail once. The error screens say the problem is ours, that it isn't a decision about the user, and exactly what did and didn't happen to their money.
+
 **Deep links:** add `?scenario=<id>&screen=<screen>` to the URL, for example `?scenario=haircut&screen=review`, `?scenario=other&screen=declined` or `?scenario=late&screen=repayment`.
 
 ---
@@ -84,6 +86,10 @@ Every token or component that was added or modified, with a one-line rationale.
 | `Notice` | Component, added | Persistent inline message (info / attention) for things the user must read before deciding, such as a reduced amount. Toast is wrong for this. | [Notice.jsx](src/novakit/Notice.jsx) |
 | `Timeline` | Component, added | A vertical "when → what → how much" sequence for terms, confirmation and repayment. | [Timeline.jsx](src/novakit/Timeline.jsx) |
 | TextField `label` / `helper` / `invalid` | Component, extended | Needed to type a partial repayment amount. It had no label or error state. Invalid isn't red, because a limit isn't a mistake. | [TextField.jsx](src/novakit/TextField.jsx) |
+| `Icon` | Component, added | A consistent SVG set replacing text glyphs (‹ ✓ ! i × ↑ ↓), which render differently per platform. Decorative by default, with a `label` when the icon carries meaning (money in/out). | [Icon.jsx](src/novakit/Icon.jsx) |
+| `enter` / `pop` animations | Token, added | Short, calm motion for screen entry and confirmations, always behind `motion-safe:` so reduced-motion users get none. | [tailwind.config.js](tailwind.config.js) |
+| AppBar back + focusable title | Component, fixed | Back is now a 44px target. Each screen moves focus to its title so screen-reader users hear where they are. | [AppBar.jsx](src/novakit/AppBar.jsx) |
+| Button press, AmountText `tabular-nums` | Component, refined | Subtle press feedback, and digits that line up in columns of money. | [Button.jsx](src/novakit/Button.jsx), [AmountText.jsx](src/novakit/AmountText.jsx) |
 | ListRow `wrap` | Component, extended | Cost explanations must never be cut off. Truncation stays the default for transaction lists. | [ListRow.jsx](src/novakit/ListRow.jsx) |
 | `AmountOption` | Component, added | Selectable amount with a locked state that explains why, so over-limit is designed out. | [AmountOption.jsx](src/novakit/AmountOption.jsx) |
 

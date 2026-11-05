@@ -8,6 +8,7 @@
  * tone: "default" | "done" (a past step, shown with a check)
  */
 import AmountText from "./AmountText.jsx";
+import Icon from "./Icon.jsx";
 
 export default function Timeline({ items, className = "" }) {
   return (
@@ -26,7 +27,7 @@ export default function Timeline({ items, className = "" }) {
                 done ? "bg-brand border-brand text-white" : "bg-white border-brand"
               }`}
             >
-              {done ? "✓" : null}
+              {done ? <Icon name="check" size={12} /> : null}
             </span>
             <div className="min-w-0 flex-1">
               <div className="text-caption text-neutral-600">{item.when}</div>

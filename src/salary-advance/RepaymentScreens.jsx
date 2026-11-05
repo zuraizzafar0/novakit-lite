@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { AmountOption, AmountText, Button, Card, ListRow, Notice, TextField } from "../novakit";
 import { Screen, OutcomeIcon } from "./layout.jsx";
-import { feeFor, fmt, NEW_DATE_OPTIONS, REPAYMENT_DATE, repayFor } from "./data.js";
+import { AGREEMENT, feeFor, fmt, NEW_DATE_OPTIONS, REPAYMENT_DATE, repayFor } from "./data.js";
 
 /**
  * Repayment: the third hard moment.
@@ -141,6 +141,14 @@ export function RepaymentScreen({ amount, repay, onHome, onPay, onChooseAmount, 
           </p>
         </Card>
       )}
+
+      {/* A record of what they agreed to, always one tap away from the debt itself. */}
+      <Card className="py-1">
+        <div className="text-caption text-neutral-600 pt-3">Your agreement</div>
+        <ListRow title="Accepted on" trailing={<span className="text-body text-neutral-900">{AGREEMENT.date}</span>} />
+        <ListRow title="Fee" trailing={<span className="text-body text-neutral-900">3%, one-time · no interest</span>} />
+        <ListRow title="Terms sent by SMS to" trailing={<span className="text-body text-neutral-900">{AGREEMENT.smsTo}</span>} />
+      </Card>
 
       {!late && !repay.usedDateChange ? (
         <p className="text-caption text-neutral-600">
@@ -300,7 +308,7 @@ export function RepaymentDoneScreen({ title, body, onHome }) {
       }
     >
       <div className="flex flex-col items-center text-center gap-3 pt-6">
-        <OutcomeIcon tone="brand">✓</OutcomeIcon>
+        <OutcomeIcon tone="brand" name="check" />
         <h2 className="text-title text-neutral-900">{title}</h2>
         <p className="text-body text-neutral-700">{body}</p>
       </div>

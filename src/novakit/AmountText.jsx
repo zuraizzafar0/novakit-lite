@@ -15,7 +15,7 @@ export default function AmountText({ amount, size = "title", tone = "default", c
   };
   const formatted = new Intl.NumberFormat("en-PK").format(amount ?? 0);
   return (
-    <span className={`${sizes[size] || sizes.title} ${tones[tone] || tones.default} ${className}`}>
+    <span className={`${sizes[size] || sizes.title} ${tones[tone] || tones.default} tabular-nums ${className}`}>
       Rs {formatted}
     </span>
   );

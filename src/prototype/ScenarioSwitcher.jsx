@@ -2,7 +2,7 @@
  * Prototype-only control (not part of NovaKit or the product).
  * Lets reviewers jump between backend outcomes without fake accounts.
  */
-export default function ScenarioSwitcher({ scenarios, value, onChange, onReset }) {
+export default function ScenarioSwitcher({ scenarios, value, onChange, onReset, problems, onProblemsChange }) {
   return (
     <aside className="w-full max-w-[390px] lg:w-72 shrink-0 bg-white rounded-lg border border-neutral-300 p-4 space-y-3">
       <div>
@@ -37,6 +37,28 @@ export default function ScenarioSwitcher({ scenarios, value, onChange, onReset }
         ))}
       </fieldset>
       ))}
+      <fieldset className="space-y-2">
+        <legend className="text-caption font-semibold text-neutral-600 uppercase tracking-wide mb-1">
+          Something goes wrong
+        </legend>
+        {[
+          ["check", "Eligibility check fails once", "Shows a technical error that's clearly not a decline."],
+          ["send", "Sending fails once after Accept", "Shows that nothing was sent or charged."],
+        ].map(([key, label, hint]) => (
+          <label key={key} className="flex gap-2 rounded-md border border-neutral-200 p-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={problems[key]}
+              onChange={(e) => onProblemsChange({ ...problems, [key]: e.target.checked })}
+              className="mt-1 accent-brand"
+            />
+            <span>
+              <span className="block text-body text-neutral-900">{label}</span>
+              <span className="block text-caption text-neutral-600">{hint}</span>
+            </span>
+          </label>
+        ))}
+      </fieldset>
       <button
         type="button"
         onClick={onReset}

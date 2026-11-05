@@ -18,7 +18,8 @@ export default function Button({
   className = "",
 }) {
   const base =
-    "inline-flex items-center justify-center gap-2 rounded-md font-semibold transition-colors select-none w-full " +
+    "inline-flex items-center justify-center gap-2 rounded-md font-semibold transition select-none w-full " +
+    "motion-safe:active:scale-[0.98] disabled:active:scale-100 " +
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2";
 
   const sizes = {

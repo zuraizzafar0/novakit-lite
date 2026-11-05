@@ -41,7 +41,7 @@ export default function AmountOption({
           selected ? "border-brand" : "border-neutral-300"
         }`}
       >
-        {selected ? <span className="h-2.5 w-2.5 rounded-full bg-brand" /> : null}
+        {selected ? <span className="h-2.5 w-2.5 rounded-full bg-brand motion-safe:animate-pop" /> : null}
       </span>
       <span className="flex-1 min-w-0">
         <AmountText amount={amount} size="title" tone={locked ? "muted" : "default"} className="block" />

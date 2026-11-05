@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button, Card, ListRow, Notice, Timeline } from "../novakit";
+import { Button, Card, Icon, ListRow, Notice, Timeline } from "../novakit";
 import { Screen, OutcomeIcon } from "./layout.jsx";
 import { CHECKLIST, fmt, repayFor, REPAYMENT_DATE, RETRY_DATE } from "./data.js";
 
@@ -19,7 +19,7 @@ export function DoneScreen({ amount, onHome }) {
       }
     >
       <div className="flex flex-col items-center text-center gap-3 pt-4">
-        <OutcomeIcon tone="success">✓</OutcomeIcon>
+        <OutcomeIcon tone="success" name="check" />
         <h2 className="text-title text-neutral-900">Rs {fmt(amount)} is in your wallet</h2>
         <p className="text-body text-neutral-700">You can use it straight away.</p>
       </div>
@@ -93,7 +93,13 @@ export function DeclinedScreen({ reason, onHome, onUploadPayslip }) {
         ) : (
           <>
             <Button size="lg" variant={notify ? "secondary" : "primary"} disabled={notify} onClick={() => setNotify(true)}>
-              {notify ? `✓ We'll remind you on ${RETRY_DATE}` : `Remind me on ${RETRY_DATE}`}
+              {notify ? (
+                <>
+                  <Icon name="check" size={18} /> We'll remind you on {RETRY_DATE}
+                </>
+              ) : (
+                `Remind me on ${RETRY_DATE}`
+              )}
             </Button>
             <Button variant="secondary" onClick={onHome}>
               Back to home
@@ -103,7 +109,7 @@ export function DeclinedScreen({ reason, onHome, onUploadPayslip }) {
       }
     >
       <div className="space-y-2 pt-2">
-        <OutcomeIcon tone="neutral">i</OutcomeIcon>
+        <OutcomeIcon tone="neutral" name="info" />
         <h2 className="text-title text-neutral-900">{copy.title}</h2>
         <p className="text-body text-neutral-700">{copy.body}</p>
       </div>
@@ -123,7 +129,7 @@ export function DeclinedScreen({ reason, onHome, onUploadPayslip }) {
                     item.ok ? "bg-success text-white" : "border-2 border-neutral-500 text-neutral-700"
                   }`}
                 >
-                  <span aria-hidden="true">{item.ok ? "✓" : "×"}</span>
+                  <Icon name={item.ok ? "check" : "x"} size={14} />
                   <span className="sr-only">{item.ok ? "Met" : "Not met"}</span>
                 </span>
               }
@@ -161,7 +167,7 @@ export function PayslipSentScreen({ onHome }) {
       }
     >
       <div className="flex flex-col items-center text-center gap-3 pt-6">
-        <OutcomeIcon tone="brand">✓</OutcomeIcon>
+        <OutcomeIcon tone="brand" name="check" />
         <h2 className="text-title text-neutral-900">Thanks, we've got your payslip</h2>
         <p className="text-body text-neutral-700">
           We'll check it within 1 working day and tell you in the app whether you can get an advance.

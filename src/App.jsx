@@ -13,7 +13,7 @@ import {
   RepaymentDoneScreen,
   reminderCopy,
 } from "./salary-advance/RepaymentScreens.jsx";
-import { Waiting } from "./salary-advance/layout.jsx";
+import { Waiting, ProblemScreen } from "./salary-advance/layout.jsx";
 import {
   ADVANCE_AMOUNT_FOR_REPAY_SCENARIOS,
   SCENARIOS,
@@ -54,8 +54,11 @@ function initialState(scenario) {
   };
 }
 
+const CHECK_STEPS = ["Your NovaPay account", "Your salary deposits", "Working out your limit"];
+const FINAL_STEPS = ["Confirming your payday", "Final check on the amount"];
+
 // Deep links for reviewers, e.g. ?scenario=late&screen=repayment or ?scenario=haircut&screen=review
-const DEEP_LINK_SCREENS = ["home", "offer", "review", "declined", "repayment", "pay_amount", "amount_changed"];
+const DEEP_LINK_SCREENS = ["home", "offer", "review", "declined", "repayment", "pay_amount", "amount_changed", "checking", "check_failed", "send_failed"];
 function fromUrl() {
   const q = new URLSearchParams(window.location.search);
   const scenario = SCENARIOS.find((x) => x.id === q.get("scenario")) || SCENARIOS[0];
@@ -71,6 +74,11 @@ function fromUrl() {
       state.requested = 15000;
       state.screen = "amount_changed";
     }
+    else if (["checking", "check_failed"].includes(screen) && !scenario.repayment) state.screen = screen;
+    else if (screen === "send_failed" && !scenario.decline && !scenario.repayment) {
+      state.requested = scenario.haircutCap ? 15000 : scenario.limit;
+      state.screen = "send_failed";
+    }
     else if (screen === "pay_amount" && scenario.repayment?.state === "late") state.screen = "pay_amount";
     else if (screen === "offer" && !scenario.decline && !scenario.repayment) state.screen = "offer";
     state.push = state.push && state.screen === "home";
@@ -83,10 +91,14 @@ export default function App() {
   const [scenarioId, setScenarioId] = useState(initial.scenarioId);
   const scenario = SCENARIOS.find((s) => s.id === scenarioId);
   const [s, setS] = useState(initial.state);
+  // Prototype-only: make the next check or send fail once, to show error states.
+  const [problems, setProblems] = useState({ check: false, send: false });
+  const [failed, setFailed] = useState({ check: false, send: false });
   const set = (patch) => setS((prev) => ({ ...prev, ...patch }));
   const go = (screen) => set({ screen, push: false });
 
   function reset(nextId = scenarioId) {
+    setFailed({ check: false, send: false });
     setScenarioId(nextId);
     setS(initialState(SCENARIOS.find((x) => x.id === nextId)));
   }
@@ -95,11 +107,14 @@ export default function App() {
   useEffect(() => {
     if (s.screen !== "checking" && s.screen !== "final_checks") return;
     const t = setTimeout(() => {
-      if (s.screen === "checking") set({ screen: scenario.decline ? "declined" : "offer" });
+      if (s.screen === "checking" && problems.check && !failed.check) {
+        setFailed((f) => ({ ...f, check: true }));
+        set({ screen: "check_failed" });
+      } else if (s.screen === "checking") set({ screen: scenario.decline ? "declined" : "offer" });
       else set({ screen: disbursedFor(scenario, s.requested) < s.requested ? "amount_changed" : "review" });
-    }, 1200);
+    }, 1800);
     return () => clearTimeout(t);
-  }, [s.screen, scenario]);
+  }, [s.screen, scenario, problems, failed]);
 
   const owed = s.advance ? repayFor(s.advance.amount) - s.repay.paid : 0;
   const home = () => go("home");
@@ -122,7 +137,14 @@ export default function App() {
   let view;
   switch (s.screen) {
     case "checking":
-      view = <Waiting title="Salary advance" message="Checking what you can get…" />;
+      view = (
+        <Waiting
+          title="Salary advance"
+          heading="Checking what you can get"
+          steps={CHECK_STEPS}
+          note="This takes a few seconds. Checking is free and doesn't commit you to anything."
+        />
+      );
       break;
     case "offer":
       view = (
@@ -135,7 +157,14 @@ export default function App() {
       );
       break;
     case "final_checks":
-      view = <Waiting title="Salary advance" message="Running final checks…" />;
+      view = (
+        <Waiting
+          title="Salary advance"
+          heading="Running final checks"
+          steps={FINAL_STEPS}
+          note="Nothing is sent until you've seen the full cost and tapped Accept."
+        />
+      );
       break;
     case "review":
       view = (
@@ -145,6 +174,11 @@ export default function App() {
           onBack={() => go(disbursedFor(scenario, s.requested) < s.requested ? "amount_changed" : "offer")}
           onDecline={home}
           onAccept={() => {
+            if (problems.send && !failed.send) {
+              setFailed((f) => ({ ...f, send: true }));
+              set({ screen: "send_failed" });
+              return;
+            }
             const amount = disbursedFor(scenario, s.requested);
             set({
               advance: { amount },
@@ -163,6 +197,42 @@ export default function App() {
           onContinue={() => go("review")}
           onChangeAmount={() => set({ requested: null, screen: "offer" })}
           onCancel={home}
+        />
+      );
+      break;
+    case "check_failed":
+      view = (
+        <ProblemScreen
+          title="Salary advance"
+          heading="We couldn't finish checking"
+          body="Something went wrong on our side. This isn't a decision about you, and you can try again now."
+          facts={["Nothing has changed on your account", "This doesn't count as a declined application"]}
+          onRetry={() => go("checking")}
+          onHome={home}
+        />
+      );
+      break;
+    case "send_failed":
+      view = (
+        <ProblemScreen
+          title="Salary advance"
+          heading="We couldn't send your advance"
+          body="Something went wrong on our side while sending. We've checked, and no money moved."
+          facts={[
+            "Nothing was sent to your wallet",
+            "Nothing was charged, and you don't owe anything",
+            "Your offer and terms are unchanged",
+          ]}
+          retryLabel={`Try again: get Rs ${fmt(disbursedFor(scenario, s.requested || 0))}`}
+          onRetry={() => {
+            const amount = disbursedFor(scenario, s.requested);
+            set({
+              advance: { amount },
+              repay: { ...s.repay, state: "active", wallet: s.repay.wallet + amount },
+              screen: "done",
+            });
+          }}
+          onHome={home}
         />
       );
       break;
@@ -242,11 +312,23 @@ export default function App() {
 
   return (
     <div className="min-h-screen w-full flex flex-col lg:flex-row items-center lg:items-start justify-center gap-6 py-6 px-4">
-      <ScenarioSwitcher scenarios={SCENARIOS} value={scenarioId} onChange={reset} onReset={() => reset()} />
+      <ScenarioSwitcher
+        scenarios={SCENARIOS}
+        value={scenarioId}
+        onChange={reset}
+        onReset={() => reset()}
+        problems={problems}
+        onProblemsChange={(p) => {
+          setProblems(p);
+          setFailed({ check: false, send: false });
+        }}
+      />
 
       {/* Mobile frame */}
       <div className="relative w-full max-w-[390px] h-[780px] bg-white rounded-[28px] shadow-xl overflow-hidden border border-neutral-300 shrink-0">
-        {view}
+        <div key={s.screen} className="h-full">
+          {view}
+        </div>
         {s.screen === "home" && s.push && s.advance ? (
           <PushPreview
             message={reminderCopy(s.repay, owed)}

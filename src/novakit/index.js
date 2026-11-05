@@ -10,3 +10,4 @@ export { default as AmountText } from "./AmountText.jsx";
 export { default as Notice } from "./Notice.jsx";
 export { default as AmountOption } from "./AmountOption.jsx";
 export { default as Timeline } from "./Timeline.jsx";
+export { default as Icon } from "./Icon.jsx";

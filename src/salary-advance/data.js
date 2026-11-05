@@ -26,6 +26,9 @@ export const NEW_DATE_OPTIONS = ["7 Dec 2026", "14 Dec 2026", "21 Dec 2026"];
 
 export const STARTING_BALANCE = 4250;
 
+// The record of what the user agreed to, shown after accepting.
+export const AGREEMENT = { date: "5 Nov 2026", smsTo: "0300 ••• 4567" };
+
 /**
  * Eligibility checklist shown on a decline (benchmark: X "Check back later").
  * ASSUMPTION: these are the user-facing criteria; the real list needs Risk/Legal sign-off.

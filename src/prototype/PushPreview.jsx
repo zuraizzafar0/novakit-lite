@@ -1,3 +1,5 @@
+import { Icon } from "../novakit";
+
 /**
  * Prototype-only: shows the reminder a user would receive as a push/SMS,
  * so reviewers can read the reminder copy in context. Not a NovaKit component.
@@ -14,8 +16,8 @@ export default function PushPreview({ message, onOpen, onDismiss }) {
           <span className="block text-caption text-neutral-600">NovaPay · now</span>
           <span className="block text-caption text-neutral-900">{message}</span>
         </button>
-        <button type="button" onClick={onDismiss} aria-label="Dismiss notification" className="text-neutral-600 h-6 w-6 shrink-0">
-          ×
+        <button type="button" onClick={onDismiss} aria-label="Dismiss notification" className="text-neutral-600 h-11 w-11 -m-2 flex items-center justify-center shrink-0">
+          <Icon name="x" size={16} />
         </button>
       </div>
     </div>

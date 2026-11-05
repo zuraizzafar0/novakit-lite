@@ -31,7 +31,7 @@ Contrast ratios are WCAG 2.x, measured against the token hex values. AA needs **
 | 12 | **The colour scales have gaps and mixed naming.** Brand has no 300, 500–700 or 900 and includes a state called `pressed`. Accent jumps from 100 to 600. Neutral has no 400, 600 or 800. | Added only `neutral-600`, because the flow needs it. A full ramp rework is **Noted**. |
 | 13 | **There's only one elevation token** (`shadow-card`). | **Noted.** |
 | 14 | **ListRow is named "ListRow / TransactionRow"** but has no tap behaviour, and it truncates titles. Truncating text about money is risky. | Reused for the cost breakdown, where the labels are short. **Noted.** |
-| 15 | **AppBar's back button is a "‹" text character** at body size. | **Noted.** |
+| 15 | **AppBar's back button is a "‹" text character** at body size. | **Fixed.** It's now a 44px target with an SVG chevron. All text glyphs (✓ ! i × ↑ ↓) were replaced with a new `Icon` set. |
 
 ## 3. Missing
 
